@@ -27,6 +27,8 @@ CONF_PROFILE = "profile"
 
 # Options
 CONF_SCAN_INTERVAL = "scan_interval"
+CONF_NOTIFY_ENABLED = "notify_enabled"
+CONF_NOTIFY_ENTITY = "notify_entity"
 
 DEFAULT_BAUDRATE = 9600
 DEFAULT_TCP_PORT = 502

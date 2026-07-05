@@ -9,6 +9,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
+    CONF_NOTIFY_ENABLED,
+    CONF_NOTIFY_ENTITY,
     CONF_SCAN_INTERVAL,
     CONF_SLAVE_ID,
     DEFAULT_SCAN_INTERVAL,
@@ -53,6 +55,7 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
         self.profile = profile
         self.slave_id: int = entry.data.get(CONF_SLAVE_ID, DEFAULT_SLAVE_ID)
         self._blocks = profile.read_blocks()
+        self._had_fault: bool | None = None
 
     async def _async_update_data(self) -> RegisterData:
         data: RegisterData = {REG_INPUT: {}, REG_HOLDING: {}}
@@ -66,7 +69,84 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
                         data[reg_type][address + offset] = value
         except GrowattModbusError as err:
             raise UpdateFailed(str(err)) from err
+        await self._async_check_fault_notification(data)
         return data
+
+    # ------------------------------------------------------------------
+    # Fault notifications
+    # ------------------------------------------------------------------
+
+    def _fault_summary(self, data: RegisterData) -> tuple[bool, list[str]] | None:
+        """Return (has_fault, active fault names) from fresh register data.
+
+        Warning bits are ignored; unknown bits count as faults. Returns
+        None when no fault register could be read.
+        """
+        found = False
+        active: list[str] = []
+        for fault in self.profile.faults:
+            raw = data[REG_INPUT].get(fault.address)
+            if raw is None:
+                continue
+            found = True
+            known_mask = 0
+            for bit, name in fault.bits.items():
+                known_mask |= 1 << bit
+                if raw & (1 << bit) and bit not in fault.warning_bits:
+                    active.append(name)
+            unknown = raw & ~known_mask & 0xFFFF
+            if unknown:
+                active.append(f"{fault.key}=0x{unknown:04X}")
+        # Inverter status register: value mapped to "fault" counts too.
+        for enum in self.profile.enums:
+            if enum.key != "inverter_status":
+                continue
+            raw = data.get(enum.register_type, {}).get(enum.address)
+            if raw is not None:
+                found = True
+                if enum.options.get(raw) == "fault":
+                    active.append("InverterStatusFault")
+        if not found:
+            return None
+        return bool(active), active
+
+    async def _async_check_fault_notification(self, data: RegisterData) -> None:
+        """Send a notification when a real fault appears or clears."""
+        summary = self._fault_summary(data)
+        if summary is None:
+            return
+        has_fault, names = summary
+        previous, self._had_fault = self._had_fault, has_fault
+        # No notification on the very first poll or without a change.
+        if previous is None or previous == has_fault:
+            return
+        if not self.entry.options.get(CONF_NOTIFY_ENABLED, False):
+            return
+        notify_entity = self.entry.options.get(CONF_NOTIFY_ENTITY)
+        if not notify_entity:
+            return
+        de = (self.hass.config.language or "en").startswith("de")
+        if has_fault:
+            faults = ", ".join(names)
+            message = (
+                f"⚠️ {self.entry.title}: Störung erkannt: {faults}"
+                if de
+                else f"⚠️ {self.entry.title}: fault detected: {faults}"
+            )
+        else:
+            message = (
+                f"✅ {self.entry.title}: Störung behoben"
+                if de
+                else f"✅ {self.entry.title}: fault cleared"
+            )
+        try:
+            await self.hass.services.async_call(
+                "notify",
+                "send_message",
+                {"entity_id": notify_entity, "message": message},
+            )
+        except Exception:  # noqa: BLE001 - notification must never break polling
+            _LOGGER.exception("Fault notification via %s failed", notify_entity)
 
     async def async_write_register(self, address: int, value: int) -> None:
         """Write a holding register and refresh state afterwards."""

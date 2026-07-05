@@ -14,9 +14,12 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT
 from homeassistant.core import callback
+from homeassistant.helpers import selector
 
 from .const import (
     BAUDRATES,
+    CONF_NOTIFY_ENABLED,
+    CONF_NOTIFY_ENTITY,
     CONF_BAUDRATE,
     CONF_CONNECTION_TYPE,
     CONF_PROFILE,
@@ -219,14 +222,25 @@ class GrowattOptionsFlow(OptionsFlow):
         if user_input is not None:
             return self.async_create_entry(data=user_input)
 
+        options = self.config_entry.options
         schema = vol.Schema(
             {
                 vol.Required(
                     CONF_SCAN_INTERVAL,
-                    default=self.config_entry.options.get(
-                        CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
-                    ),
+                    default=options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
                 ): vol.All(vol.Coerce(int), vol.Range(min=5, max=600)),
+                vol.Required(
+                    CONF_NOTIFY_ENABLED,
+                    default=options.get(CONF_NOTIFY_ENABLED, False),
+                ): bool,
+                vol.Optional(
+                    CONF_NOTIFY_ENTITY,
+                    description={
+                        "suggested_value": options.get(CONF_NOTIFY_ENTITY)
+                    },
+                ): selector.EntitySelector(
+                    selector.EntitySelectorConfig(domain="notify")
+                ),
             }
         )
         return self.async_show_form(step_id="init", data_schema=schema)

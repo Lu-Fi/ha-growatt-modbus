@@ -50,7 +50,12 @@
       "init": {
         "title": "Growatt Modbus options",
         "data": {
-          "scan_interval": "Polling interval (seconds)"
+          "scan_interval": "Polling interval (seconds)",
+          "notify_enabled": "Notify on faults",
+          "notify_entity": "Notification entity"
+        },
+        "data_description": {
+          "notify_enabled": "Sends a message when a real fault appears or clears (warnings are excluded)."
         }
       }
     }
