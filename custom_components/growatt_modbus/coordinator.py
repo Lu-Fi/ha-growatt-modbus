@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
@@ -9,16 +10,23 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
+    CONF_ENERGY_SCAN_INTERVAL,
     CONF_NOTIFY_ENABLED,
     CONF_NOTIFY_ENTITY,
     CONF_SCAN_INTERVAL,
+    CONF_SETTINGS_SCAN_INTERVAL,
     CONF_SLAVE_ID,
+    DEFAULT_ENERGY_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_SETTINGS_SCAN_INTERVAL,
     DEFAULT_SLAVE_ID,
     DOMAIN,
 )
 from .modbus_client import GrowattModbusClient, GrowattModbusError
 from .registers import (
+    GROUP_ENERGY,
+    GROUP_FAST,
+    GROUP_SETTINGS,
     REG_DERIVED,
     REG_HOLDING,
     REG_INPUT,
@@ -31,12 +39,6 @@ from .registers import (
 _LOGGER = logging.getLogger(__name__)
 
 RegisterData = dict[str, dict[int, int]]
-
-# Holding registers contain settings (SoC limits, priority, export limit,
-# serial number, ...) that only change through writes or the inverter
-# display. They are polled every Nth cycle instead of every cycle; input
-# registers (live measurements) are read every cycle.
-HOLDING_POLL_EVERY_N_CYCLES = 10
 
 
 class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
@@ -60,36 +62,51 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
         self.client = client
         self.profile = profile
         self.slave_id: int = entry.data.get(CONF_SLAVE_ID, DEFAULT_SLAVE_ID)
-        self._blocks = profile.read_blocks()
+        self._plan = profile.polling_plan()
         self._had_fault: bool | None = None
-        self._poll_cycle = 0
-        self._refresh_holding = False
+        self._refresh_settings = False
+        self._group_interval = {
+            GROUP_ENERGY: entry.options.get(
+                CONF_ENERGY_SCAN_INTERVAL, DEFAULT_ENERGY_SCAN_INTERVAL
+            ),
+            GROUP_SETTINGS: entry.options.get(
+                CONF_SETTINGS_SCAN_INTERVAL, DEFAULT_SETTINGS_SCAN_INTERVAL
+            ),
+        }
+        self._next_due = {GROUP_ENERGY: 0.0, GROUP_SETTINGS: 0.0}
 
     async def _async_update_data(self) -> RegisterData:
-        previous_holding: dict[int, int] = (
-            dict(self.data.get(REG_HOLDING, {})) if self.data else {}
-        )
-        read_holding = (
-            not previous_holding
-            or self._refresh_holding
-            or self._poll_cycle % HOLDING_POLL_EVERY_N_CYCLES == 0
-        )
-        self._poll_cycle += 1
-        self._refresh_holding = False
+        now = time.monotonic()
+        previous = self.data or {}
+        data: RegisterData = {
+            REG_INPUT: dict(previous.get(REG_INPUT, {})),
+            REG_HOLDING: dict(previous.get(REG_HOLDING, {})),
+        }
 
-        data: RegisterData = {REG_INPUT: {}, REG_HOLDING: previous_holding}
+        groups = [GROUP_FAST]
+        if now >= self._next_due[GROUP_ENERGY]:
+            groups.append(GROUP_ENERGY)
+        if self._refresh_settings or now >= self._next_due[GROUP_SETTINGS]:
+            groups.append(GROUP_SETTINGS)
+
         try:
-            for reg_type, blocks in self._blocks.items():
-                if reg_type == REG_HOLDING and not read_holding:
-                    continue
-                for address, count in blocks:
-                    values = await self.client.read_registers(
-                        reg_type, address, count, self.slave_id
-                    )
-                    for offset, value in enumerate(values):
-                        data[reg_type][address + offset] = value
+            for group in groups:
+                for reg_type, blocks in self._plan[group].items():
+                    for address, count in blocks:
+                        values = await self.client.read_registers(
+                            reg_type, address, count, self.slave_id
+                        )
+                        for offset, value in enumerate(values):
+                            data[reg_type][address + offset] = value
         except GrowattModbusError as err:
             raise UpdateFailed(str(err)) from err
+
+        for group in (GROUP_ENERGY, GROUP_SETTINGS):
+            if group in groups:
+                self._next_due[group] = now + self._group_interval[group]
+        if GROUP_SETTINGS in groups:
+            self._refresh_settings = False
+
         await self._async_check_fault_notification(data)
         return data
 
@@ -176,11 +193,11 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
         except GrowattModbusError as err:
             raise UpdateFailed(str(err)) from err
         # Optimistically update local cache, then poll for confirmation
-        # (forcing a holding-register read on the next cycle).
+        # (forcing a settings read on the next cycle).
         if self.data is not None:
             self.data[REG_HOLDING][address] = value
             self.async_set_updated_data(self.data)
-        self._refresh_holding = True
+        self._refresh_settings = True
         await self.async_request_refresh()
 
     # ------------------------------------------------------------------

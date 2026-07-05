@@ -158,6 +158,72 @@ class DeviceProfile:
             blocks[reg_type] = _plan_blocks(sorted(addresses))
         return blocks
 
+    def polling_plan(self) -> dict[str, dict[str, list[tuple[int, int]]]]:
+        """Read blocks per polling group: fast / energy / settings.
+
+        Fast: live input registers (power, voltages, status, faults).
+        Energy: input registers of total/total_increasing sensors.
+        Settings: all holding registers.
+        """
+        addrs: dict[str, dict[str, set[int]]] = {
+            GROUP_FAST: {REG_INPUT: set()},
+            GROUP_ENERGY: {REG_INPUT: set()},
+            GROUP_SETTINGS: {REG_HOLDING: set()},
+        }
+        fast_input = addrs[GROUP_FAST][REG_INPUT]
+        energy_input = addrs[GROUP_ENERGY][REG_INPUT]
+        settings = addrs[GROUP_SETTINGS][REG_HOLDING]
+
+        for sensor in self.sensors:
+            if sensor.register_type == REG_DERIVED:
+                # Derived values read raw input registers directly.
+                fast_input.add(sensor.address)
+                continue
+            if sensor.register_type == REG_HOLDING:
+                target = settings
+            elif sensor.state_class in ENERGY_STATE_CLASSES:
+                target = energy_input
+            else:
+                target = fast_input
+            target.add(sensor.address)
+            if sensor.data_type == "u32":
+                target.add(sensor.address + 1)
+        for enum in self.enums:
+            if enum.register_type == REG_INPUT:
+                fast_input.add(enum.address)
+            else:
+                settings.add(enum.address)
+        for fault in self.faults:
+            fast_input.add(fault.address)
+        for number in self.numbers:
+            settings.add(number.address)
+        for select in self.selects:
+            settings.add(select.address)
+        for switch in self.switches:
+            settings.add(switch.address)
+        if self.firmware_register is not None:
+            settings.add(self.firmware_register)
+        if self.serial_registers is not None:
+            start, count = self.serial_registers
+            settings.update(range(start, start + count))
+
+        return {
+            group: {
+                reg_type: _plan_blocks(sorted(addresses))
+                for reg_type, addresses in per_type.items()
+            }
+            for group, per_type in addrs.items()
+        }
+
+
+# Polling groups: live measurements every cycle, energy counters and
+# settings (holding registers) on their own, slower intervals.
+GROUP_FAST = "fast"
+GROUP_ENERGY = "energy"
+GROUP_SETTINGS = "settings"
+
+ENERGY_STATE_CLASSES = ("total", "total_increasing")
+
 
 def _plan_blocks(addresses: list[int]) -> list[tuple[int, int]]:
     """Merge sorted addresses into read blocks with limited gaps and size."""

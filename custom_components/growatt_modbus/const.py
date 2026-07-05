@@ -26,7 +26,9 @@ CONF_SLAVE_ID = "slave_id"
 CONF_PROFILE = "profile"
 
 # Options
-CONF_SCAN_INTERVAL = "scan_interval"
+CONF_SCAN_INTERVAL = "scan_interval"  # live measurements
+CONF_ENERGY_SCAN_INTERVAL = "energy_scan_interval"  # energy counters
+CONF_SETTINGS_SCAN_INTERVAL = "settings_scan_interval"  # holding registers
 CONF_NOTIFY_ENABLED = "notify_enabled"
 CONF_NOTIFY_ENTITY = "notify_entity"
 
@@ -34,6 +36,8 @@ DEFAULT_BAUDRATE = 9600
 DEFAULT_TCP_PORT = 502
 DEFAULT_SLAVE_ID = 1
 DEFAULT_SCAN_INTERVAL = 30
+DEFAULT_ENERGY_SCAN_INTERVAL = 300
+DEFAULT_SETTINGS_SCAN_INTERVAL = 300
 DEFAULT_PROFILE = "sph"
 PROFILE_AUTO = "auto"
 

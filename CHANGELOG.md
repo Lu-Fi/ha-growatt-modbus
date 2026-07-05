@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.5.0] - 2026-07-05
+
+### Added
+- Three independent, configurable polling intervals: live values
+  (default 30 s), energy counters (default 300 s) and settings/holding
+  registers (default 300 s) — all adjustable in the integration options
+- Registers are grouped automatically: total/total_increasing sensors
+  form the energy group, everything else stays in the live group
+
+### Changed
+- Replaces the fixed every-10th-cycle settings polling from 0.4.1
+
 ## [0.4.1] - 2026-07-05
 
 ### Changed

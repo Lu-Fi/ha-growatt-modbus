@@ -18,8 +18,12 @@ from homeassistant.helpers import selector
 
 from .const import (
     BAUDRATES,
+    CONF_ENERGY_SCAN_INTERVAL,
     CONF_NOTIFY_ENABLED,
     CONF_NOTIFY_ENTITY,
+    CONF_SETTINGS_SCAN_INTERVAL,
+    DEFAULT_ENERGY_SCAN_INTERVAL,
+    DEFAULT_SETTINGS_SCAN_INTERVAL,
     CONF_BAUDRATE,
     CONF_CONNECTION_TYPE,
     CONF_PROFILE,
@@ -229,6 +233,18 @@ class GrowattOptionsFlow(OptionsFlow):
                     CONF_SCAN_INTERVAL,
                     default=options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
                 ): vol.All(vol.Coerce(int), vol.Range(min=5, max=600)),
+                vol.Required(
+                    CONF_ENERGY_SCAN_INTERVAL,
+                    default=options.get(
+                        CONF_ENERGY_SCAN_INTERVAL, DEFAULT_ENERGY_SCAN_INTERVAL
+                    ),
+                ): vol.All(vol.Coerce(int), vol.Range(min=30, max=86400)),
+                vol.Required(
+                    CONF_SETTINGS_SCAN_INTERVAL,
+                    default=options.get(
+                        CONF_SETTINGS_SCAN_INTERVAL, DEFAULT_SETTINGS_SCAN_INTERVAL
+                    ),
+                ): vol.All(vol.Coerce(int), vol.Range(min=30, max=86400)),
                 vol.Required(
                     CONF_NOTIFY_ENABLED,
                     default=options.get(CONF_NOTIFY_ENABLED, False),

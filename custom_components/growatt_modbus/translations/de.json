@@ -50,9 +50,11 @@
       "init": {
         "title": "Growatt Modbus Optionen",
         "data": {
-          "scan_interval": "Abfrageintervall (Sekunden)",
+          "scan_interval": "Abfrageintervall Messwerte (Sekunden)",
           "notify_enabled": "Benachrichtigung bei Störung",
-          "notify_entity": "Benachrichtigungs-Entität"
+          "notify_entity": "Benachrichtigungs-Entität",
+          "energy_scan_interval": "Abfrageintervall Energiezähler (Sekunden)",
+          "settings_scan_interval": "Abfrageintervall Einstellungen (Sekunden)"
         },
         "data_description": {
           "notify_enabled": "Sendet eine Nachricht, wenn eine echte Störung auftritt oder behoben ist (Warnungen ausgenommen)."
