@@ -10,5 +10,5 @@
   "issue_tracker": "https://github.com/Lu-Fi/ha-growatt-modbus/issues",
   "loggers": ["custom_components.growatt_modbus"],
   "requirements": ["pymodbus>=3.6.0"],
-  "version": "0.4.0"
+  "version": "0.4.1"
 }

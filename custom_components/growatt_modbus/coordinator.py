@@ -32,6 +32,12 @@ _LOGGER = logging.getLogger(__name__)
 
 RegisterData = dict[str, dict[int, int]]
 
+# Holding registers contain settings (SoC limits, priority, export limit,
+# serial number, ...) that only change through writes or the inverter
+# display. They are polled every Nth cycle instead of every cycle; input
+# registers (live measurements) are read every cycle.
+HOLDING_POLL_EVERY_N_CYCLES = 10
+
 
 class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
     """Polls all register blocks of one inverter."""
@@ -56,11 +62,26 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
         self.slave_id: int = entry.data.get(CONF_SLAVE_ID, DEFAULT_SLAVE_ID)
         self._blocks = profile.read_blocks()
         self._had_fault: bool | None = None
+        self._poll_cycle = 0
+        self._refresh_holding = False
 
     async def _async_update_data(self) -> RegisterData:
-        data: RegisterData = {REG_INPUT: {}, REG_HOLDING: {}}
+        previous_holding: dict[int, int] = (
+            dict(self.data.get(REG_HOLDING, {})) if self.data else {}
+        )
+        read_holding = (
+            not previous_holding
+            or self._refresh_holding
+            or self._poll_cycle % HOLDING_POLL_EVERY_N_CYCLES == 0
+        )
+        self._poll_cycle += 1
+        self._refresh_holding = False
+
+        data: RegisterData = {REG_INPUT: {}, REG_HOLDING: previous_holding}
         try:
             for reg_type, blocks in self._blocks.items():
+                if reg_type == REG_HOLDING and not read_holding:
+                    continue
                 for address, count in blocks:
                     values = await self.client.read_registers(
                         reg_type, address, count, self.slave_id
@@ -154,10 +175,12 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
             await self.client.write_register(address, value, self.slave_id)
         except GrowattModbusError as err:
             raise UpdateFailed(str(err)) from err
-        # Optimistically update local cache, then poll for confirmation.
+        # Optimistically update local cache, then poll for confirmation
+        # (forcing a holding-register read on the next cycle).
         if self.data is not None:
             self.data[REG_HOLDING][address] = value
             self.async_set_updated_data(self.data)
+        self._refresh_holding = True
         await self.async_request_refresh()
 
     # ------------------------------------------------------------------

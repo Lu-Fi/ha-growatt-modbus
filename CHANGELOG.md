@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.1] - 2026-07-05
+
+### Changed
+- Two-tier polling: holding registers (settings, serial number, limits)
+  are now read only every 10th cycle instead of every cycle — input
+  registers (live measurements) remain on the configured interval.
+  Reduces bus traffic from 7 to 2 reads per typical cycle.
+- After a write, the next refresh always re-reads the holding registers,
+  so switches, numbers and selects confirm immediately.
+
 ## [0.4.0] - 2026-07-05
 
 ### Added
