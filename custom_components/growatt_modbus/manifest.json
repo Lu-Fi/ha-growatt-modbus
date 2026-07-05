@@ -1,0 +1,14 @@
+{
+  "domain": "growatt_modbus",
+  "name": "Growatt Modbus",
+  "codeowners": ["@Lu-Fi"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/Lu-Fi/ha-growatt-modbus",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/Lu-Fi/ha-growatt-modbus/issues",
+  "loggers": ["custom_components.growatt_modbus"],
+  "requirements": ["pymodbus>=3.6.0"],
+  "version": "0.2.0"
+}

@@ -1,0 +1,216 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Growatt Modbus",
+        "description": "How is the inverter connected?",
+        "menu_options": {
+          "serial": "Serial (RS485 / USB adapter)",
+          "tcp": "Modbus TCP (network)"
+        }
+      },
+      "serial": {
+        "title": "Serial connection",
+        "data": {
+          "name": "Name",
+          "serial_port": "Serial port",
+          "baudrate": "Baud rate",
+          "slave_id": "Modbus address (slave ID)",
+          "profile": "Inverter series"
+        },
+        "data_description": {
+          "serial_port": "E.g. /dev/ttyUSB0 or /dev/serial/by-id/…",
+          "slave_id": "Each inverter on the same bus needs a unique address."
+        }
+      },
+      "tcp": {
+        "title": "Modbus TCP connection",
+        "data": {
+          "name": "Name",
+          "host": "Host",
+          "port": "Port",
+          "slave_id": "Modbus address (slave ID)",
+          "profile": "Inverter series"
+        },
+        "data_description": {
+          "host": "IP address or hostname of the Modbus TCP gateway."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the inverter. Check port, wiring and slave ID. Note: the serial port must not be used by another integration at the same time.",
+      "unknown": "Unexpected error, see the log for details."
+    },
+    "abort": {
+      "already_configured": "This inverter is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Growatt Modbus options",
+        "data": {
+          "scan_interval": "Polling interval (seconds)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "pv_power": { "name": "PV power" },
+      "pv1_voltage": { "name": "PV1 voltage" },
+      "pv1_current": { "name": "PV1 current" },
+      "pv1_power": { "name": "PV1 power" },
+      "pv2_voltage": { "name": "PV2 voltage" },
+      "pv2_current": { "name": "PV2 current" },
+      "pv2_power": { "name": "PV2 power" },
+      "grid_output_power": { "name": "AC output power" },
+      "grid_frequency": { "name": "Grid frequency" },
+      "grid_voltage_l1": { "name": "Grid voltage L1" },
+      "grid_output_power_l1": { "name": "AC output power L1" },
+      "grid_voltage_l2": { "name": "Grid voltage L2" },
+      "grid_output_power_l2": { "name": "AC output power L2" },
+      "grid_voltage_l3": { "name": "Grid voltage L3" },
+      "grid_output_power_l3": { "name": "AC output power L3" },
+      "grid_voltage_l1_l2": { "name": "Line voltage L1-L2" },
+      "grid_voltage_l2_l3": { "name": "Line voltage L2-L3" },
+      "grid_voltage_l3_l1": { "name": "Line voltage L3-L1" },
+      "eps_voltage_l2": { "name": "EPS voltage L2" },
+      "eps_power_l2": { "name": "EPS power L2" },
+      "eps_voltage_l3": { "name": "EPS voltage L3" },
+      "eps_power_l3": { "name": "EPS power L3" },
+      "output_power_percent": { "name": "Output power percentage" },
+      "power_factor": { "name": "Power factor" },
+      "inverter_temperature": { "name": "Inverter temperature" },
+      "ipm_temperature": { "name": "IPM temperature" },
+      "boost_temperature": { "name": "Boost temperature" },
+      "battery_discharge_power": { "name": "Battery discharge power" },
+      "battery_charge_power": { "name": "Battery charge power" },
+      "battery_power": { "name": "Battery power" },
+      "battery_voltage": { "name": "Battery voltage" },
+      "battery_soc": { "name": "Battery" },
+      "grid_import_power": { "name": "Grid import power" },
+      "grid_export_power": { "name": "Grid export power" },
+      "local_load_power": { "name": "Load power" },
+      "eps_frequency": { "name": "EPS frequency" },
+      "eps_voltage": { "name": "EPS voltage" },
+      "eps_power": { "name": "EPS power" },
+      "eps_load": { "name": "EPS load" },
+      "ac_output_energy_today": { "name": "AC output energy today" },
+      "ac_output_energy_total": { "name": "AC output energy total" },
+      "pv1_energy_today": { "name": "PV1 energy today" },
+      "pv1_energy_total": { "name": "PV1 energy total" },
+      "pv2_energy_today": { "name": "PV2 energy today" },
+      "pv2_energy_total": { "name": "PV2 energy total" },
+      "pv_energy_total": { "name": "PV energy total" },
+      "energy_to_user_today": { "name": "Grid import today" },
+      "energy_to_user_total": { "name": "Grid import total" },
+      "energy_to_grid_today": { "name": "Grid export today" },
+      "energy_to_grid_total": { "name": "Grid export total" },
+      "energy_discharge_today": { "name": "Battery discharge today" },
+      "energy_discharge_total": { "name": "Battery discharge total" },
+      "energy_charge_today": { "name": "Battery charge today" },
+      "energy_charge_total": { "name": "Battery charge total" },
+      "local_load_energy_today": { "name": "Load consumption today" },
+      "local_load_energy_total": { "name": "Load consumption total" },
+      "modbus_version": { "name": "Modbus version" },
+      "vbat_min": { "name": "Battery voltage minimum" },
+      "vbat_max": { "name": "Battery voltage maximum" },
+      "pv_start_voltage": { "name": "PV start voltage" },
+      "max_output_reactive_power": { "name": "Maximum reactive power" },
+      "inverter_status": {
+        "name": "Status",
+        "state": {
+          "waiting": "Waiting",
+          "normal": "Normal",
+          "fault": "Fault",
+          "flash": "Firmware update",
+          "normal_hybrid": "Normal (hybrid)"
+        }
+      },
+      "inverter_mode": {
+        "name": "Inverter mode",
+        "state": {
+          "waiting": "Waiting",
+          "self_test": "Self-test",
+          "reserved": "Reserved",
+          "sys_fault": "System fault",
+          "flash": "Firmware update",
+          "pv_bat_online": "PV & battery online",
+          "bat_online": "Battery online",
+          "pv_offline": "PV offline",
+          "bat_offline": "Battery offline"
+        }
+      },
+      "derating_mode": {
+        "name": "Derating",
+        "state": {
+          "no_derating": "No derating",
+          "pv_voltage": "PV voltage",
+          "grid_voltage": "Grid voltage",
+          "grid_frequency": "Grid frequency",
+          "boost_temperature": "Boost temperature",
+          "inverter_temperature": "Inverter temperature",
+          "control": "External control",
+          "overtemp_recovery": "Over-temperature recovery"
+        }
+      },
+      "ct_mode": {
+        "name": "CT mode",
+        "state": {
+          "wired_ct": "Wired CT",
+          "wireless_ct": "Wireless CT",
+          "meter": "Meter"
+        }
+      },
+      "fault_0": {
+        "name": "Fault register 0",
+        "state": { "ok": "OK", "fault": "Fault" }
+      },
+      "fault_1": {
+        "name": "Fault register 1",
+        "state": { "ok": "OK", "fault": "Fault" }
+      },
+      "fault_2": {
+        "name": "Fault register 2",
+        "state": { "ok": "OK", "fault": "Fault" }
+      },
+      "fault_3": {
+        "name": "Fault register 3",
+        "state": { "ok": "OK", "fault": "Fault" }
+      },
+      "fault_4": {
+        "name": "Fault register 4",
+        "state": { "ok": "OK", "fault": "Fault" }
+      },
+      "fault_5": {
+        "name": "Fault register 5",
+        "state": { "ok": "OK", "fault": "Fault" }
+      },
+      "fault_6": {
+        "name": "Fault register 6",
+        "state": { "ok": "OK", "fault": "Fault" }
+      }
+    },
+    "binary_sensor": {
+      "any_fault": { "name": "Fault" }
+    },
+    "number": {
+      "discharge_soc_min": { "name": "Minimum discharge SoC" },
+      "max_output_active_power": { "name": "Maximum active power" }
+    },
+    "select": {
+      "priority": {
+        "name": "Priority",
+        "state": {
+          "load_first": "Load first",
+          "battery_first": "Battery first",
+          "grid_first": "Grid first"
+        }
+      }
+    },
+    "switch": {
+      "power_state": { "name": "Power" }
+    }
+  }
+}
