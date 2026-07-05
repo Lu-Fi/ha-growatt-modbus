@@ -19,14 +19,19 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the fault binary sensor."""
+    """Set up the fault and warning binary sensors."""
     coordinator: GrowattCoordinator = hass.data[DOMAIN][entry.entry_id]
     if coordinator.profile.faults:
-        async_add_entities([GrowattAnyFaultSensor(coordinator)])
+        async_add_entities(
+            [
+                GrowattAnyFaultSensor(coordinator),
+                GrowattAnyWarningSensor(coordinator),
+            ]
+        )
 
 
 class GrowattAnyFaultSensor(GrowattEntity, BinarySensorEntity):
-    """On when any fault register reports a non-zero value."""
+    """On when any real fault bit (not a mere warning) is set."""
 
     _attr_device_class = BinarySensorDeviceClass.PROBLEM
 
@@ -36,3 +41,16 @@ class GrowattAnyFaultSensor(GrowattEntity, BinarySensorEntity):
     @property
     def is_on(self) -> bool | None:
         return self.coordinator.any_fault()
+
+
+class GrowattAnyWarningSensor(GrowattEntity, BinarySensorEntity):
+    """On when any warning bit is set (e.g. PV voltage low at night)."""
+
+    _attr_device_class = BinarySensorDeviceClass.PROBLEM
+
+    def __init__(self, coordinator: GrowattCoordinator) -> None:
+        super().__init__(coordinator, "any_warning")
+
+    @property
+    def is_on(self) -> bool | None:
+        return self.coordinator.any_warning()

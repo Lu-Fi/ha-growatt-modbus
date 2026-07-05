@@ -16,8 +16,7 @@ from .coordinator import GrowattCoordinator
 from .entity import GrowattEntity
 from .registers import EnumDef, FaultDef, SensorDef
 
-FAULT_STATE_OK = "ok"
-FAULT_STATE_FAULT = "fault"
+FAULT_STATES = ["ok", "warning", "fault"]
 
 
 async def async_setup_entry(
@@ -90,7 +89,7 @@ class GrowattFaultSensor(GrowattEntity, SensorEntity):
 
     _attr_device_class = SensorDeviceClass.ENUM
     _attr_entity_category = EntityCategory.DIAGNOSTIC
-    _attr_options = [FAULT_STATE_OK, FAULT_STATE_FAULT]
+    _attr_options = FAULT_STATES
 
     def __init__(self, coordinator: GrowattCoordinator, defn: FaultDef) -> None:
         super().__init__(coordinator, defn.key)
@@ -98,10 +97,7 @@ class GrowattFaultSensor(GrowattEntity, SensorEntity):
 
     @property
     def native_value(self) -> str | None:
-        bits = self.coordinator.fault_bits(self._defn)
-        if bits is None:
-            return None
-        return FAULT_STATE_FAULT if bits else FAULT_STATE_OK
+        return self.coordinator.fault_state(self._defn)
 
     @property
     def extra_state_attributes(self) -> dict[str, object]:

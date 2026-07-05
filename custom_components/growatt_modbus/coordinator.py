@@ -144,17 +144,55 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
             return None
         return [name for bit, name in defn.bits.items() if raw & (1 << bit)]
 
+    def _active_bits(self, defn: FaultDef, warnings: bool) -> list[str] | None:
+        """Active bit names, filtered to warnings or real faults."""
+        raw = self.raw_value(REG_INPUT, defn.address)
+        if raw is None:
+            return None
+        return [
+            name
+            for bit, name in defn.bits.items()
+            if raw & (1 << bit) and (bit in defn.warning_bits) == warnings
+        ]
+
+    def fault_state(self, defn: FaultDef) -> str | None:
+        """State of one fault register: fault > warning > ok."""
+        faults = self._active_bits(defn, warnings=False)
+        warnings = self._active_bits(defn, warnings=True)
+        if faults is None or warnings is None:
+            return None
+        # Unknown bits (not in the map) count as faults to stay safe.
+        raw = self.raw_value(REG_INPUT, defn.address) or 0
+        known = sum(1 << bit for bit in defn.bits)
+        if faults or raw & ~known:
+            return "fault"
+        if warnings:
+            return "warning"
+        return "ok"
+
     def any_fault(self) -> bool | None:
-        total = 0
+        """True if any real (non-warning) fault bit is set."""
         found = False
         for fault in self.profile.faults:
-            raw = self.raw_value(REG_INPUT, fault.address)
-            if raw is not None:
-                found = True
-                total += raw
-        if not found:
-            return None
-        return total > 0
+            state = self.fault_state(fault)
+            if state is None:
+                continue
+            found = True
+            if state == "fault":
+                return True
+        return False if found else None
+
+    def any_warning(self) -> bool | None:
+        """True if any warning bit is set."""
+        found = False
+        for fault in self.profile.faults:
+            bits = self._active_bits(fault, warnings=True)
+            if bits is None:
+                continue
+            found = True
+            if bits:
+                return True
+        return False if found else None
 
     def firmware_version(self) -> str | None:
         if self.profile.firmware_register is None:

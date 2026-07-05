@@ -57,67 +57,189 @@
   },
   "entity": {
     "sensor": {
-      "pv_power": { "name": "PV-Leistung" },
-      "pv1_voltage": { "name": "PV1 Spannung" },
-      "pv1_current": { "name": "PV1 Strom" },
-      "pv1_power": { "name": "PV1 Leistung" },
-      "pv2_voltage": { "name": "PV2 Spannung" },
-      "pv2_current": { "name": "PV2 Strom" },
-      "pv2_power": { "name": "PV2 Leistung" },
-      "grid_output_power": { "name": "AC-Ausgangsleistung" },
-      "grid_frequency": { "name": "Netzfrequenz" },
-      "grid_voltage_l1": { "name": "Netzspannung L1" },
-      "grid_output_power_l1": { "name": "AC-Ausgangsleistung L1" },
-      "grid_voltage_l2": { "name": "Netzspannung L2" },
-      "grid_output_power_l2": { "name": "AC-Ausgangsleistung L2" },
-      "grid_voltage_l3": { "name": "Netzspannung L3" },
-      "grid_output_power_l3": { "name": "AC-Ausgangsleistung L3" },
-      "grid_voltage_l1_l2": { "name": "Außenleiterspannung L1-L2" },
-      "grid_voltage_l2_l3": { "name": "Außenleiterspannung L2-L3" },
-      "grid_voltage_l3_l1": { "name": "Außenleiterspannung L3-L1" },
-      "eps_voltage_l2": { "name": "EPS-Spannung L2" },
-      "eps_power_l2": { "name": "EPS-Leistung L2" },
-      "eps_voltage_l3": { "name": "EPS-Spannung L3" },
-      "eps_power_l3": { "name": "EPS-Leistung L3" },
-      "output_power_percent": { "name": "Ausgangsleistung Prozent" },
-      "power_factor": { "name": "Leistungsfaktor" },
-      "inverter_temperature": { "name": "Wechselrichter-Temperatur" },
-      "ipm_temperature": { "name": "IPM-Temperatur" },
-      "boost_temperature": { "name": "Boost-Temperatur" },
-      "battery_discharge_power": { "name": "Batterie-Entladeleistung" },
-      "battery_charge_power": { "name": "Batterie-Ladeleistung" },
-      "battery_power": { "name": "Batterieleistung" },
-      "battery_voltage": { "name": "Batteriespannung" },
-      "battery_soc": { "name": "Batterie" },
-      "grid_import_power": { "name": "Netzbezug" },
-      "grid_export_power": { "name": "Netzeinspeisung" },
-      "local_load_power": { "name": "Hausverbrauch" },
-      "eps_frequency": { "name": "EPS-Frequenz" },
-      "eps_voltage": { "name": "EPS-Spannung" },
-      "eps_power": { "name": "EPS-Leistung" },
-      "eps_load": { "name": "EPS-Auslastung" },
-      "ac_output_energy_today": { "name": "AC-Energie heute" },
-      "ac_output_energy_total": { "name": "AC-Energie gesamt" },
-      "pv1_energy_today": { "name": "PV1 Energie heute" },
-      "pv1_energy_total": { "name": "PV1 Energie gesamt" },
-      "pv2_energy_today": { "name": "PV2 Energie heute" },
-      "pv2_energy_total": { "name": "PV2 Energie gesamt" },
-      "pv_energy_total": { "name": "PV-Energie gesamt" },
-      "energy_to_user_today": { "name": "Netzbezug heute" },
-      "energy_to_user_total": { "name": "Netzbezug gesamt" },
-      "energy_to_grid_today": { "name": "Netzeinspeisung heute" },
-      "energy_to_grid_total": { "name": "Netzeinspeisung gesamt" },
-      "energy_discharge_today": { "name": "Batterie-Entladung heute" },
-      "energy_discharge_total": { "name": "Batterie-Entladung gesamt" },
-      "energy_charge_today": { "name": "Batterie-Ladung heute" },
-      "energy_charge_total": { "name": "Batterie-Ladung gesamt" },
-      "local_load_energy_today": { "name": "Hausverbrauch heute" },
-      "local_load_energy_total": { "name": "Hausverbrauch gesamt" },
-      "modbus_version": { "name": "Modbus-Version" },
-      "vbat_min": { "name": "Batteriespannung Minimum" },
-      "vbat_max": { "name": "Batteriespannung Maximum" },
-      "pv_start_voltage": { "name": "PV-Startspannung" },
-      "max_output_reactive_power": { "name": "Maximale Blindleistung" },
+      "pv_power": {
+        "name": "PV-Leistung"
+      },
+      "pv1_voltage": {
+        "name": "PV1 Spannung"
+      },
+      "pv1_current": {
+        "name": "PV1 Strom"
+      },
+      "pv1_power": {
+        "name": "PV1 Leistung"
+      },
+      "pv2_voltage": {
+        "name": "PV2 Spannung"
+      },
+      "pv2_current": {
+        "name": "PV2 Strom"
+      },
+      "pv2_power": {
+        "name": "PV2 Leistung"
+      },
+      "grid_output_power": {
+        "name": "AC-Ausgangsleistung"
+      },
+      "grid_frequency": {
+        "name": "Netzfrequenz"
+      },
+      "grid_voltage_l1": {
+        "name": "Netzspannung L1"
+      },
+      "grid_output_power_l1": {
+        "name": "AC-Ausgangsleistung L1"
+      },
+      "grid_voltage_l2": {
+        "name": "Netzspannung L2"
+      },
+      "grid_output_power_l2": {
+        "name": "AC-Ausgangsleistung L2"
+      },
+      "grid_voltage_l3": {
+        "name": "Netzspannung L3"
+      },
+      "grid_output_power_l3": {
+        "name": "AC-Ausgangsleistung L3"
+      },
+      "grid_voltage_l1_l2": {
+        "name": "Außenleiterspannung L1-L2"
+      },
+      "grid_voltage_l2_l3": {
+        "name": "Außenleiterspannung L2-L3"
+      },
+      "grid_voltage_l3_l1": {
+        "name": "Außenleiterspannung L3-L1"
+      },
+      "eps_voltage_l2": {
+        "name": "EPS-Spannung L2"
+      },
+      "eps_power_l2": {
+        "name": "EPS-Leistung L2"
+      },
+      "eps_voltage_l3": {
+        "name": "EPS-Spannung L3"
+      },
+      "eps_power_l3": {
+        "name": "EPS-Leistung L3"
+      },
+      "output_power_percent": {
+        "name": "Ausgangsleistung Prozent"
+      },
+      "power_factor": {
+        "name": "Leistungsfaktor"
+      },
+      "inverter_temperature": {
+        "name": "Wechselrichter-Temperatur"
+      },
+      "ipm_temperature": {
+        "name": "IPM-Temperatur"
+      },
+      "boost_temperature": {
+        "name": "Boost-Temperatur"
+      },
+      "battery_discharge_power": {
+        "name": "Batterie-Entladeleistung"
+      },
+      "battery_charge_power": {
+        "name": "Batterie-Ladeleistung"
+      },
+      "battery_power": {
+        "name": "Batterieleistung"
+      },
+      "battery_voltage": {
+        "name": "Batteriespannung"
+      },
+      "battery_soc": {
+        "name": "Batterie"
+      },
+      "grid_import_power": {
+        "name": "Netzbezug"
+      },
+      "grid_export_power": {
+        "name": "Netzeinspeisung"
+      },
+      "local_load_power": {
+        "name": "Hausverbrauch"
+      },
+      "eps_frequency": {
+        "name": "EPS-Frequenz"
+      },
+      "eps_voltage": {
+        "name": "EPS-Spannung"
+      },
+      "eps_power": {
+        "name": "EPS-Leistung"
+      },
+      "eps_load": {
+        "name": "EPS-Auslastung"
+      },
+      "ac_output_energy_today": {
+        "name": "AC-Energie heute"
+      },
+      "ac_output_energy_total": {
+        "name": "AC-Energie gesamt"
+      },
+      "pv1_energy_today": {
+        "name": "PV1 Energie heute"
+      },
+      "pv1_energy_total": {
+        "name": "PV1 Energie gesamt"
+      },
+      "pv2_energy_today": {
+        "name": "PV2 Energie heute"
+      },
+      "pv2_energy_total": {
+        "name": "PV2 Energie gesamt"
+      },
+      "pv_energy_total": {
+        "name": "PV-Energie gesamt"
+      },
+      "energy_to_user_today": {
+        "name": "Netzbezug heute"
+      },
+      "energy_to_user_total": {
+        "name": "Netzbezug gesamt"
+      },
+      "energy_to_grid_today": {
+        "name": "Netzeinspeisung heute"
+      },
+      "energy_to_grid_total": {
+        "name": "Netzeinspeisung gesamt"
+      },
+      "energy_discharge_today": {
+        "name": "Batterie-Entladung heute"
+      },
+      "energy_discharge_total": {
+        "name": "Batterie-Entladung gesamt"
+      },
+      "energy_charge_today": {
+        "name": "Batterie-Ladung heute"
+      },
+      "energy_charge_total": {
+        "name": "Batterie-Ladung gesamt"
+      },
+      "local_load_energy_today": {
+        "name": "Hausverbrauch heute"
+      },
+      "local_load_energy_total": {
+        "name": "Hausverbrauch gesamt"
+      },
+      "modbus_version": {
+        "name": "Modbus-Version"
+      },
+      "vbat_min": {
+        "name": "Batteriespannung Minimum"
+      },
+      "vbat_max": {
+        "name": "Batteriespannung Maximum"
+      },
+      "pv_start_voltage": {
+        "name": "PV-Startspannung"
+      },
+      "max_output_reactive_power": {
+        "name": "Maximale Blindleistung"
+      },
       "inverter_status": {
         "name": "Status",
         "state": {
@@ -165,39 +287,76 @@
       },
       "fault_0": {
         "name": "Fehlerregister 0",
-        "state": { "ok": "OK", "fault": "Störung" }
+        "state": {
+          "ok": "OK",
+          "fault": "Störung",
+          "warning": "Warnung"
+        }
       },
       "fault_1": {
         "name": "Fehlerregister 1",
-        "state": { "ok": "OK", "fault": "Störung" }
+        "state": {
+          "ok": "OK",
+          "fault": "Störung",
+          "warning": "Warnung"
+        }
       },
       "fault_2": {
         "name": "Fehlerregister 2",
-        "state": { "ok": "OK", "fault": "Störung" }
+        "state": {
+          "ok": "OK",
+          "fault": "Störung",
+          "warning": "Warnung"
+        }
       },
       "fault_3": {
         "name": "Fehlerregister 3",
-        "state": { "ok": "OK", "fault": "Störung" }
+        "state": {
+          "ok": "OK",
+          "fault": "Störung",
+          "warning": "Warnung"
+        }
       },
       "fault_4": {
         "name": "Fehlerregister 4",
-        "state": { "ok": "OK", "fault": "Störung" }
+        "state": {
+          "ok": "OK",
+          "fault": "Störung",
+          "warning": "Warnung"
+        }
       },
       "fault_5": {
         "name": "Fehlerregister 5",
-        "state": { "ok": "OK", "fault": "Störung" }
+        "state": {
+          "ok": "OK",
+          "fault": "Störung",
+          "warning": "Warnung"
+        }
       },
       "fault_6": {
         "name": "Fehlerregister 6",
-        "state": { "ok": "OK", "fault": "Störung" }
+        "state": {
+          "ok": "OK",
+          "fault": "Störung",
+          "warning": "Warnung"
+        }
       }
     },
     "binary_sensor": {
-      "any_fault": { "name": "Störung" }
+      "any_fault": {
+        "name": "Störung"
+      },
+      "any_warning": {
+        "name": "Warnung"
+      }
     },
     "number": {
-      "discharge_soc_min": { "name": "Minimaler Entlade-SOC" },
-      "max_output_active_power": { "name": "Maximale Wirkleistung" }
+      "discharge_soc_min": {
+        "name": "Minimaler Entlade-SOC"
+      },
+      "max_output_active_power": {
+        "name": "Maximale Wirkleistung"
+      }
     },
     "select": {
       "priority": {
@@ -210,7 +369,9 @@
       }
     },
     "switch": {
-      "power_state": { "name": "Betrieb" }
+      "power_state": {
+        "name": "Betrieb"
+      }
     }
   }
 }

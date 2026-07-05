@@ -63,11 +63,17 @@ class EnumDef:
 
 @dataclass(frozen=True)
 class FaultDef:
-    """A fault/warning bitfield register (input register)."""
+    """A fault/warning bitfield register (input register).
+
+    ``warning_bits`` lists bit positions that are mere warnings (e.g.
+    "PV voltage low" at night); they do not trigger the fault binary
+    sensor, only the warning binary sensor.
+    """
 
     key: str
     address: int
     bits: dict[int, str] = field(default_factory=dict)
+    warning_bits: frozenset[int] = frozenset()
 
 
 @dataclass(frozen=True)
@@ -352,6 +358,7 @@ SPH_FAULTS: tuple[FaultDef, ...] = (
             5: "PV1_VoltLowWarn",
             6: "PV2_VoltLowWarn",
         },
+        warning_bits=frozenset({5, 6}),
     ),
     FaultDef(
         "fault_5",
@@ -388,6 +395,7 @@ SPH_FAULTS: tuple[FaultDef, ...] = (
             14: "PairingTimeOut",
             15: "CT_LN_Reversed",
         },
+        warning_bits=frozenset({8, 9, 10}),
     ),
 )
 
