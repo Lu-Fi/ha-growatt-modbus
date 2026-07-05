@@ -24,4 +24,5 @@ class GrowattEntity(CoordinatorEntity[GrowattCoordinator]):
             manufacturer=MANUFACTURER,
             model=coordinator.profile.name,
             sw_version=coordinator.firmware_version(),
+            serial_number=coordinator.serial_number(),
         )

@@ -122,6 +122,8 @@ class DeviceProfile:
     selects: tuple[SelectDef, ...] = ()
     switches: tuple[SwitchDef, ...] = ()
     firmware_register: int | None = None  # holding register with modbus version
+    # (start, count) of ASCII serial number holding registers, or None
+    serial_registers: tuple[int, int] | None = None
 
     def required_registers(self) -> dict[str, set[int]]:
         """All register addresses that must be polled, per register type."""
@@ -144,6 +146,9 @@ class DeviceProfile:
             needed[REG_HOLDING].add(switch.address)
         if self.firmware_register is not None:
             needed[REG_HOLDING].add(self.firmware_register)
+        if self.serial_registers is not None:
+            start, count = self.serial_registers
+            needed[REG_HOLDING].update(range(start, start + count))
         return needed
 
     def read_blocks(self) -> dict[str, list[tuple[int, int]]]:
@@ -226,6 +231,19 @@ SPH_SENSORS: tuple[SensorDef, ...] = (
     SensorDef("energy_charge_total", REG_INPUT, 1058, "u32", 0.1, 1, "kWh", "energy", "total_increasing"),
     SensorDef("local_load_energy_today", REG_INPUT, 1060, "u32", 0.1, 1, "kWh", "energy", "total"),
     SensorDef("local_load_energy_total", REG_INPUT, 1062, "u32", 0.1, 1, "kWh", "energy", "total_increasing"),
+    # Battery / BMS (scales are undocumented by Growatt and were verified
+    # against live values; disabled by default except battery temperature,
+    # since third-party BMSes may leave them empty)
+    # Note: protocol claims 0.1 °C for 1040/1089, real hardware sends 1 °C
+    SensorDef("battery_temperature", REG_INPUT, 1040, "u16", 1, 0, "°C", "temperature", "measurement"),
+    SensorDef("bms_soc", REG_INPUT, 1086, "u16", 1, 0, "%", "battery", "measurement", enabled_default=False),
+    SensorDef("bms_battery_voltage", REG_INPUT, 1087, "u16", 0.01, 2, "V", "voltage", "measurement", enabled_default=False),
+    SensorDef("bms_battery_current", REG_INPUT, 1088, "i16", 0.01, 2, "A", "current", "measurement", enabled_default=False),
+    SensorDef("bms_battery_temperature", REG_INPUT, 1089, "u16", 1, 0, "°C", "temperature", "measurement", enabled_default=False),
+    SensorDef("bms_max_current", REG_INPUT, 1090, "u16", 0.01, 2, "A", "current", None, diagnostic=True, enabled_default=False),
+    SensorDef("bms_delta_volt", REG_INPUT, 1094, "u16", 1, 0, "mV", None, "measurement", diagnostic=True, enabled_default=False),
+    SensorDef("bms_cycle_count", REG_INPUT, 1095, "u16", 1, 0, None, None, "total_increasing", diagnostic=True, enabled_default=False),
+    SensorDef("bms_soh", REG_INPUT, 1096, "u16", 1, 0, "%", None, "measurement", diagnostic=True, enabled_default=False),
     # Settings / diagnostics (holding registers, read only)
     SensorDef("modbus_version", REG_HOLDING, 88, "u16", 0.01, 2, None, None, None, diagnostic=True),
     SensorDef("vbat_min", REG_HOLDING, 1006, "u16", 0.01, 2, "V", "voltage", None, diagnostic=True),
@@ -402,6 +420,8 @@ SPH_FAULTS: tuple[FaultDef, ...] = (
 SPH_NUMBERS: tuple[NumberDef, ...] = (
     NumberDef("discharge_soc_min", 608, 10, 100, 1, 1, "%", "battery"),
     NumberDef("max_output_active_power", 3, 0, 100, 1, 1, "%", None),
+    # Export limit rate, holding 123, 0.1 % steps (protocol V1.20)
+    NumberDef("export_limit_rate", 123, 0, 100, 0.5, 0.1, "%", None),
 )
 
 SPH_SELECTS: tuple[SelectDef, ...] = (
@@ -410,6 +430,8 @@ SPH_SELECTS: tuple[SelectDef, ...] = (
 
 SPH_SWITCHES: tuple[SwitchDef, ...] = (
     SwitchDef("power_state", 0, 1, 0),
+    # Export limitation (zero feed-in), holding 122 (protocol V1.20)
+    SwitchDef("export_limit", 122, 1, 0),
 )
 
 SPH_PROFILE = DeviceProfile(
@@ -422,6 +444,7 @@ SPH_PROFILE = DeviceProfile(
     selects=SPH_SELECTS,
     switches=SPH_SWITCHES,
     firmware_register=88,
+    serial_registers=(23, 5),
 )
 
 # ---------------------------------------------------------------------------
@@ -454,6 +477,7 @@ SPH_TL3_PROFILE = DeviceProfile(
     selects=SPH_SELECTS,
     switches=SPH_SWITCHES,
     firmware_register=88,
+    serial_registers=(23, 5),
 )
 
 PROFILES: dict[str, DeviceProfile] = {

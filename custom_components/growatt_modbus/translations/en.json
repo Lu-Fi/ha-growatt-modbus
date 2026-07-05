@@ -345,6 +345,33 @@
           "fault": "Fault",
           "warning": "Warning"
         }
+      },
+      "battery_temperature": {
+        "name": "Battery temperature"
+      },
+      "bms_soc": {
+        "name": "BMS battery"
+      },
+      "bms_battery_voltage": {
+        "name": "BMS battery voltage"
+      },
+      "bms_battery_current": {
+        "name": "BMS battery current"
+      },
+      "bms_battery_temperature": {
+        "name": "BMS battery temperature"
+      },
+      "bms_max_current": {
+        "name": "BMS max current"
+      },
+      "bms_delta_volt": {
+        "name": "BMS cell voltage delta"
+      },
+      "bms_cycle_count": {
+        "name": "Battery cycles"
+      },
+      "bms_soh": {
+        "name": "Battery health (SOH)"
       }
     },
     "binary_sensor": {
@@ -361,6 +388,9 @@
       },
       "max_output_active_power": {
         "name": "Maximum active power"
+      },
+      "export_limit_rate": {
+        "name": "Export limit rate"
       }
     },
     "select": {
@@ -376,6 +406,9 @@
     "switch": {
       "power_state": {
         "name": "Power"
+      },
+      "export_limit": {
+        "name": "Export limit"
       }
     }
   }

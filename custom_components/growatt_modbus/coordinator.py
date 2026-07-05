@@ -274,6 +274,21 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
                 return True
         return False if found else None
 
+    def serial_number(self) -> str | None:
+        """ASCII serial number from holding registers, if configured."""
+        if self.profile.serial_registers is None:
+            return None
+        start, count = self.profile.serial_registers
+        chars: list[str] = []
+        for offset in range(count):
+            raw = self.raw_value(REG_HOLDING, start + offset)
+            if raw is None:
+                return None
+            chars.append(chr((raw >> 8) & 0xFF))
+            chars.append(chr(raw & 0xFF))
+        serial = "".join(c for c in chars if c.isprintable() and c != " ").strip()
+        return serial or None
+
     def firmware_version(self) -> str | None:
         if self.profile.firmware_register is None:
             return None

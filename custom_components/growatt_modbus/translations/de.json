@@ -345,6 +345,33 @@
           "fault": "Störung",
           "warning": "Warnung"
         }
+      },
+      "battery_temperature": {
+        "name": "Batterietemperatur"
+      },
+      "bms_soc": {
+        "name": "BMS Batterie"
+      },
+      "bms_battery_voltage": {
+        "name": "BMS Batteriespannung"
+      },
+      "bms_battery_current": {
+        "name": "BMS Batteriestrom"
+      },
+      "bms_battery_temperature": {
+        "name": "BMS Batterietemperatur"
+      },
+      "bms_max_current": {
+        "name": "BMS Maximalstrom"
+      },
+      "bms_delta_volt": {
+        "name": "BMS Zellspannungsdifferenz"
+      },
+      "bms_cycle_count": {
+        "name": "Batteriezyklen"
+      },
+      "bms_soh": {
+        "name": "Batteriegesundheit (SOH)"
       }
     },
     "binary_sensor": {
@@ -361,6 +388,9 @@
       },
       "max_output_active_power": {
         "name": "Maximale Wirkleistung"
+      },
+      "export_limit_rate": {
+        "name": "Einspeiselimit"
       }
     },
     "select": {
@@ -376,6 +406,9 @@
     "switch": {
       "power_state": {
         "name": "Betrieb"
+      },
+      "export_limit": {
+        "name": "Einspeisebegrenzung"
       }
     }
   }
