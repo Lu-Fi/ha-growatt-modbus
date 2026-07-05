@@ -374,6 +374,9 @@
       },
       "bms_soh": {
         "name": "Battery health (SOH)"
+      },
+      "inverter_time": {
+        "name": "Inverter time"
       }
     },
     "binary_sensor": {
@@ -411,6 +414,11 @@
       },
       "export_limit": {
         "name": "Export limit"
+      }
+    },
+    "button": {
+      "sync_clock": {
+        "name": "Synchronize clock"
       }
     }
   }

@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.0] - 2026-07-05
+
+### Added
+- Real firmware versions (ASCII, holding 9–14) shown in the device info
+  instead of only the modbus protocol version
+- "Synchronize clock" button: writes the current HA local time to the
+  inverter clock (holding 45–50) — Growatt clocks drift, and the
+  inverter's internal daily counters depend on its clock; the log shows
+  the previous inverter time on each sync
+- "Inverter time" diagnostic sensor showing the inverter's internal
+  clock, so drift is visible before it matters
+- GitHub Actions workflow: hassfest + HACS validation on every push
+
 ## [0.5.0] - 2026-07-05
 
 ### Added

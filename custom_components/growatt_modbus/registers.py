@@ -124,6 +124,12 @@ class DeviceProfile:
     firmware_register: int | None = None  # holding register with modbus version
     # (start, count) of ASCII serial number holding registers, or None
     serial_registers: tuple[int, int] | None = None
+    # (start, count) of ASCII firmware version holding registers, or None
+    firmware_ascii_registers: tuple[int, int] | None = None
+    # (start, count) of ASCII control firmware holding registers, or None
+    control_firmware_registers: tuple[int, int] | None = None
+    # First of six holding registers (Y/M/D/h/m/s) for the system clock
+    clock_register: int | None = None
 
     def required_registers(self) -> dict[str, set[int]]:
         """All register addresses that must be polled, per register type."""
@@ -146,9 +152,18 @@ class DeviceProfile:
             needed[REG_HOLDING].add(switch.address)
         if self.firmware_register is not None:
             needed[REG_HOLDING].add(self.firmware_register)
-        if self.serial_registers is not None:
-            start, count = self.serial_registers
-            needed[REG_HOLDING].update(range(start, start + count))
+        for ascii_range in (
+            self.serial_registers,
+            self.firmware_ascii_registers,
+            self.control_firmware_registers,
+        ):
+            if ascii_range is not None:
+                start, count = ascii_range
+                needed[REG_HOLDING].update(range(start, start + count))
+        if self.clock_register is not None:
+            needed[REG_HOLDING].update(
+                range(self.clock_register, self.clock_register + 6)
+            )
         return needed
 
     def read_blocks(self) -> dict[str, list[tuple[int, int]]]:
@@ -203,9 +218,16 @@ class DeviceProfile:
             settings.add(switch.address)
         if self.firmware_register is not None:
             settings.add(self.firmware_register)
-        if self.serial_registers is not None:
-            start, count = self.serial_registers
-            settings.update(range(start, start + count))
+        for ascii_range in (
+            self.serial_registers,
+            self.firmware_ascii_registers,
+            self.control_firmware_registers,
+        ):
+            if ascii_range is not None:
+                start, count = ascii_range
+                settings.update(range(start, start + count))
+        if self.clock_register is not None:
+            settings.update(range(self.clock_register, self.clock_register + 6))
 
         return {
             group: {
@@ -311,11 +333,13 @@ SPH_SENSORS: tuple[SensorDef, ...] = (
     SensorDef("bms_cycle_count", REG_INPUT, 1095, "u16", 1, 0, None, None, "total_increasing", diagnostic=True, enabled_default=False),
     SensorDef("bms_soh", REG_INPUT, 1096, "u16", 1, 0, "%", None, "measurement", diagnostic=True, enabled_default=False),
     # Settings / diagnostics (holding registers, read only)
+    # fmt: off
     SensorDef("modbus_version", REG_HOLDING, 88, "u16", 0.01, 2, None, None, None, diagnostic=True),
     SensorDef("vbat_min", REG_HOLDING, 1006, "u16", 0.01, 2, "V", "voltage", None, diagnostic=True),
     SensorDef("vbat_max", REG_HOLDING, 1007, "u16", 0.01, 2, "V", "voltage", None, diagnostic=True),
     SensorDef("pv_start_voltage", REG_HOLDING, 17, "u16", 0.1, 1, "V", "voltage", None, diagnostic=True),
     SensorDef("max_output_reactive_power", REG_HOLDING, 4, "u16", 1, 0, "%", None, None, diagnostic=True),
+    # fmt: on
 )
 
 SPH_ENUMS: tuple[EnumDef, ...] = (
@@ -511,6 +535,9 @@ SPH_PROFILE = DeviceProfile(
     switches=SPH_SWITCHES,
     firmware_register=88,
     serial_registers=(23, 5),
+    firmware_ascii_registers=(9, 3),
+    control_firmware_registers=(12, 3),
+    clock_register=45,
 )
 
 # ---------------------------------------------------------------------------
@@ -544,6 +571,9 @@ SPH_TL3_PROFILE = DeviceProfile(
     switches=SPH_SWITCHES,
     firmware_register=88,
     serial_registers=(23, 5),
+    firmware_ascii_registers=(9, 3),
+    control_firmware_registers=(12, 3),
+    clock_register=45,
 )
 
 PROFILES: dict[str, DeviceProfile] = {

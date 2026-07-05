@@ -35,6 +35,8 @@ async def async_setup_entry(
     entities.extend(
         GrowattFaultSensor(coordinator, defn) for defn in coordinator.profile.faults
     )
+    if coordinator.profile.clock_register is not None:
+        entities.append(GrowattClockSensor(coordinator))
     async_add_entities(entities)
 
 
@@ -82,6 +84,24 @@ class GrowattEnumSensor(GrowattEntity, SensorEntity):
                 self._defn.register_type, self._defn.address
             )
         }
+
+
+class GrowattClockSensor(GrowattEntity, SensorEntity):
+    """The inverter's internal clock (updated with the settings interval).
+
+    Useful to spot clock drift — the inverter's daily energy counters
+    reset based on its own clock, not Home Assistant's.
+    """
+
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator: GrowattCoordinator) -> None:
+        super().__init__(coordinator, "inverter_time")
+
+    @property
+    def native_value(self):
+        return self.coordinator.inverter_time()
 
 
 class GrowattFaultSensor(GrowattEntity, SensorEntity):

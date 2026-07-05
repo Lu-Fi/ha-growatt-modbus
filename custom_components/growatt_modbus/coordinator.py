@@ -3,11 +3,12 @@ from __future__ import annotations
 
 import logging
 import time
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 
 from .const import (
     CONF_ENERGY_SCAN_INTERVAL,
@@ -314,11 +315,11 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
                 return True
         return False if found else None
 
-    def serial_number(self) -> str | None:
-        """ASCII serial number from holding registers, if configured."""
-        if self.profile.serial_registers is None:
+    def _decode_ascii(self, ascii_range: tuple[int, int] | None) -> str | None:
+        """Decode consecutive holding registers as an ASCII string."""
+        if ascii_range is None:
             return None
-        start, count = self.profile.serial_registers
+        start, count = ascii_range
         chars: list[str] = []
         for offset in range(count):
             raw = self.raw_value(REG_HOLDING, start + offset)
@@ -326,13 +327,71 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
                 return None
             chars.append(chr((raw >> 8) & 0xFF))
             chars.append(chr(raw & 0xFF))
-        serial = "".join(c for c in chars if c.isprintable() and c != " ").strip()
-        return serial or None
+        text = "".join(c for c in chars if c.isprintable() and c != " ").strip()
+        return text or None
+
+    def serial_number(self) -> str | None:
+        """ASCII serial number from holding registers, if configured."""
+        return self._decode_ascii(self.profile.serial_registers)
 
     def firmware_version(self) -> str | None:
+        """Firmware string: ASCII versions preferred, modbus version fallback."""
+        firmware = self._decode_ascii(self.profile.firmware_ascii_registers)
+        control = self._decode_ascii(self.profile.control_firmware_registers)
+        if firmware and control:
+            return f"{firmware} / {control}"
+        if firmware:
+            return firmware
         if self.profile.firmware_register is None:
             return None
         raw = self.raw_value(REG_HOLDING, self.profile.firmware_register)
         if raw is None:
             return None
         return f"Modbus {raw / 100:.2f}"
+
+    def inverter_time(self) -> datetime | None:
+        """The inverter's internal clock, read from the holding registers."""
+        start = self.profile.clock_register
+        if start is None:
+            return None
+        values = [self.raw_value(REG_HOLDING, start + i) for i in range(6)]
+        if any(v is None for v in values):
+            return None
+        year, month, day, hour, minute, second = values
+        if year < 100:
+            year += 2000
+        try:
+            return datetime(
+                year, month, day, hour, minute, second,
+                tzinfo=dt_util.get_default_time_zone(),
+            )
+        except ValueError:
+            return None
+
+    async def async_sync_clock(self) -> None:
+        """Write the current Home Assistant local time to the inverter."""
+        start = self.profile.clock_register
+        if start is None:
+            return
+        before = self.inverter_time()
+        now = dt_util.now()
+        # Some firmwares store the full year, others only two digits;
+        # follow whatever style the inverter currently reports.
+        current_year = self.raw_value(REG_HOLDING, start) or 0
+        year = now.year if current_year >= 2000 else now.year % 100
+        values = [year, now.month, now.day, now.hour, now.minute, now.second]
+        try:
+            for offset, value in enumerate(values):
+                await self.client.write_register(
+                    start + offset, value, self.slave_id
+                )
+        except GrowattModbusError as err:
+            raise UpdateFailed(f"Clock sync failed: {err}") from err
+        _LOGGER.info(
+            "%s: inverter clock synchronized from %s to %s",
+            self.entry.title,
+            before.strftime("%Y-%m-%d %H:%M:%S") if before else "unknown",
+            now.strftime("%Y-%m-%d %H:%M:%S"),
+        )
+        self._refresh_settings = True
+        await self.async_request_refresh()

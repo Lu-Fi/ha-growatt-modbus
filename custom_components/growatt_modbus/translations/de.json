@@ -374,6 +374,9 @@
       },
       "bms_soh": {
         "name": "Batteriegesundheit (SOH)"
+      },
+      "inverter_time": {
+        "name": "Wechselrichter-Uhrzeit"
       }
     },
     "binary_sensor": {
@@ -411,6 +414,11 @@
       },
       "export_limit": {
         "name": "Einspeisebegrenzung"
+      }
+    },
+    "button": {
+      "sync_clock": {
+        "name": "Uhrzeit synchronisieren"
       }
     }
   }
