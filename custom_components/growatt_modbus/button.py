@@ -28,9 +28,15 @@ class GrowattSyncClockButton(GrowattEntity, ButtonEntity):
 
     Growatt clocks tend to drift; the inverter's internal daily energy
     counters depend on its clock, so keeping it in sync matters.
+
+    Disabled by default: several SPH firmwares reject Modbus writes to
+    the clock registers entirely (illegal data address) — enable and try
+    it; if the press fails, your firmware only allows setting the clock
+    via the display or Growatt's own tools.
     """
 
     _attr_entity_category = EntityCategory.CONFIG
+    _attr_entity_registry_enabled_default = False
 
     def __init__(self, coordinator: GrowattCoordinator) -> None:
         super().__init__(coordinator, "sync_clock")

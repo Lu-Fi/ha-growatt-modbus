@@ -136,6 +136,34 @@ class GrowattModbusClient:
                     f"Write of holding {address}={value} returned error: {response}"
                 )
 
+    async def write_registers(
+        self, address: int, values: list[int], unit: int
+    ) -> None:
+        """Write consecutive holding registers in one transaction (fn 16).
+
+        Some register blocks (e.g. the system clock) reject single-register
+        writes and must be written as a block.
+        """
+        async with self._lock:
+            await self._ensure_connected()
+            try:
+                response = await self._client.write_registers(
+                    address, values, **self._unit_kwargs(unit)
+                )
+            except Exception as err:  # noqa: BLE001
+                self._client.close()
+                raise GrowattModbusError(
+                    f"Block write of holding {address}+{len(values)} "
+                    f"failed: {err}"
+                ) from err
+            finally:
+                await asyncio.sleep(INTER_FRAME_DELAY)
+            if response.isError():
+                raise GrowattModbusError(
+                    f"Block write of holding {address}+{len(values)} "
+                    f"returned error: {response}"
+                )
+
     async def test_connection(self, unit: int) -> None:
         """Probe the inverter by reading input register 0 (status)."""
         await self.read_registers("input", 0, 1, unit)

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.1] - 2026-07-06
+
+### Changed
+- Replaced the "inverter time" timestamp sensor with a "clock drift"
+  sensor (seconds, rounded to 5 s): it only changes state when the
+  inverter clock actually drifts, so it no longer floods the logbook.
+  The absolute inverter time remains available as an attribute.
+- Clock sync uses a Modbus block write (fn 16) with a 7-register
+  fallback including the weekday; the button is disabled by default
+  because several SPH firmwares reject clock writes entirely
+
 ## [0.6.0] - 2026-07-05
 
 ### Added

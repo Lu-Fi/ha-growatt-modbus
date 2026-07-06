@@ -36,7 +36,7 @@ async def async_setup_entry(
         GrowattFaultSensor(coordinator, defn) for defn in coordinator.profile.faults
     )
     if coordinator.profile.clock_register is not None:
-        entities.append(GrowattClockSensor(coordinator))
+        entities.append(GrowattClockDriftSensor(coordinator))
     async_add_entities(entities)
 
 
@@ -86,22 +86,32 @@ class GrowattEnumSensor(GrowattEntity, SensorEntity):
         }
 
 
-class GrowattClockSensor(GrowattEntity, SensorEntity):
-    """The inverter's internal clock (updated with the settings interval).
+class GrowattClockDriftSensor(GrowattEntity, SensorEntity):
+    """Deviation of the inverter clock from real time, in seconds.
 
-    Useful to spot clock drift — the inverter's daily energy counters
-    reset based on its own clock, not Home Assistant's.
+    Only changes when the drift actually changes (rounded to 5 s), so it
+    does not flood the logbook the way a timestamp sensor would. The
+    absolute inverter time is exposed as an attribute. The inverter's
+    daily energy counters reset based on its own clock, so drift matters.
     """
 
-    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_device_class = SensorDeviceClass.DURATION
+    _attr_native_unit_of_measurement = "s"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(self, coordinator: GrowattCoordinator) -> None:
-        super().__init__(coordinator, "inverter_time")
+        super().__init__(coordinator, "clock_drift")
 
     @property
-    def native_value(self):
-        return self.coordinator.inverter_time()
+    def native_value(self) -> int | None:
+        return self.coordinator.clock_drift_seconds()
+
+    @property
+    def extra_state_attributes(self) -> dict[str, str | None]:
+        inverter_time = self.coordinator.inverter_time()
+        return {
+            "inverter_time": inverter_time.isoformat() if inverter_time else None
+        }
 
 
 class GrowattFaultSensor(GrowattEntity, SensorEntity):

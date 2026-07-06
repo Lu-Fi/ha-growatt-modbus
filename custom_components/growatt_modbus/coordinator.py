@@ -75,6 +75,7 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
             ),
         }
         self._next_due = {GROUP_ENERGY: 0.0, GROUP_SETTINGS: 0.0}
+        self.settings_read_at: datetime | None = None
 
     async def _async_update_data(self) -> RegisterData:
         now = time.monotonic()
@@ -107,6 +108,7 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
                 self._next_due[group] = now + self._group_interval[group]
         if GROUP_SETTINGS in groups:
             self._refresh_settings = False
+            self.settings_read_at = dt_util.now()
 
         await self._async_check_fault_notification(data)
         return data
@@ -368,6 +370,18 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
         except ValueError:
             return None
 
+    def clock_drift_seconds(self) -> int | None:
+        """Inverter clock deviation from real time, in seconds.
+
+        Positive = inverter clock runs ahead. Rounded to 5 s so read-time
+        jitter does not create noisy state changes.
+        """
+        inverter = self.inverter_time()
+        if inverter is None or self.settings_read_at is None:
+            return None
+        drift = (inverter - self.settings_read_at).total_seconds()
+        return int(round(drift / 5) * 5)
+
     async def async_sync_clock(self) -> None:
         """Write the current Home Assistant local time to the inverter."""
         start = self.profile.clock_register
@@ -380,10 +394,17 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
         current_year = self.raw_value(REG_HOLDING, start) or 0
         year = now.year if current_year >= 2000 else now.year % 100
         values = [year, now.month, now.day, now.hour, now.minute, now.second]
+        # Weekday register follows the clock block; 0 = Sunday.
+        weekday = (now.weekday() + 1) % 7
         try:
-            for offset, value in enumerate(values):
-                await self.client.write_register(
-                    start + offset, value, self.slave_id
+            # The clock only accepts block writes (fn 16), not single
+            # writes; some firmwares additionally require the weekday
+            # register to be part of the same block.
+            try:
+                await self.client.write_registers(start, values, self.slave_id)
+            except GrowattModbusError:
+                await self.client.write_registers(
+                    start, [*values, weekday], self.slave_id
                 )
         except GrowattModbusError as err:
             raise UpdateFailed(f"Clock sync failed: {err}") from err

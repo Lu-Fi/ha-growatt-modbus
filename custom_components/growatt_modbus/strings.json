@@ -375,8 +375,8 @@
       "bms_soh": {
         "name": "Battery health (SOH)"
       },
-      "inverter_time": {
-        "name": "Inverter time"
+      "clock_drift": {
+        "name": "Clock drift"
       }
     },
     "binary_sensor": {
