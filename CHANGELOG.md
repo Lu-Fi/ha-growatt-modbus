@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.7.0] - 2026-07-06
+
+### Added
+- Full time-window control matching Growatt's own Setting dialog:
+  Grid First (discharge rate, stop SoC, 3 windows) and Battery First
+  (charge rate, stop SoC, AC charging switch, 3 windows). Window starts
+  and ends are native time entities, each window has an enable switch
+  (holding 1070/1071, 1080-1088, 1090-1092, 1100-1108)
+
+### Changed
+- Integration renamed to "Growatt SPH Modbus" to avoid confusion with
+  cloud-based Growatt integrations
+- Priority is now a read-only enum sensor: holding 1044 is marked "R"
+  in the protocol — the active mode results from the enabled time
+  windows (Load First is the default outside any window). The previous
+  priority select never had an effect and was removed.
+
 ## [0.6.1] - 2026-07-06
 
 ### Changed

@@ -1,4 +1,4 @@
-# Growatt Modbus for Home Assistant
+# Growatt SPH Modbus for Home Assistant
 
 Local Modbus integration for Growatt hybrid inverters (SPH / SPH TL3 series) — no cloud, no ShineServer.
 

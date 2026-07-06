@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Growatt Modbus",
+        "title": "Growatt SPH Modbus",
         "description": "Wie ist der Wechselrichter angebunden?",
         "menu_options": {
           "serial": "Seriell (RS485 / USB-Adapter)",
@@ -48,7 +48,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Growatt Modbus Optionen",
+        "title": "Growatt SPH Modbus Optionen",
         "data": {
           "scan_interval": "Abfrageintervall Messwerte (Sekunden)",
           "notify_enabled": "Benachrichtigung bei Störung",
@@ -377,6 +377,14 @@
       },
       "clock_drift": {
         "name": "Uhrzeit-Abweichung"
+      },
+      "priority": {
+        "name": "Priorität",
+        "state": {
+          "load_first": "Last zuerst",
+          "battery_first": "Batterie zuerst",
+          "grid_first": "Netz zuerst"
+        }
       }
     },
     "binary_sensor": {
@@ -396,29 +404,91 @@
       },
       "export_limit_rate": {
         "name": "Einspeiselimit"
+      },
+      "grid_first_rate": {
+        "name": "Grid First Entladerate"
+      },
+      "grid_first_stop_soc": {
+        "name": "Grid First Stop-SOC"
+      },
+      "battery_first_rate": {
+        "name": "Battery First Laderate"
+      },
+      "battery_first_stop_soc": {
+        "name": "Battery First Stop-SOC"
       }
     },
-    "select": {
-      "priority": {
-        "name": "Priorität",
-        "state": {
-          "load_first": "Last zuerst",
-          "battery_first": "Batterie zuerst",
-          "grid_first": "Netz zuerst"
-        }
-      }
-    },
+    "select": {},
     "switch": {
       "power_state": {
         "name": "Betrieb"
       },
       "export_limit": {
         "name": "Einspeisebegrenzung"
+      },
+      "ac_charge": {
+        "name": "AC-Laden"
+      },
+      "grid_first_1_enable": {
+        "name": "Grid First Fenster 1"
+      },
+      "grid_first_2_enable": {
+        "name": "Grid First Fenster 2"
+      },
+      "grid_first_3_enable": {
+        "name": "Grid First Fenster 3"
+      },
+      "battery_first_1_enable": {
+        "name": "Battery First Fenster 1"
+      },
+      "battery_first_2_enable": {
+        "name": "Battery First Fenster 2"
+      },
+      "battery_first_3_enable": {
+        "name": "Battery First Fenster 3"
       }
     },
     "button": {
       "sync_clock": {
         "name": "Uhrzeit synchronisieren"
+      }
+    },
+    "time": {
+      "grid_first_1_start": {
+        "name": "Grid First Fenster 1 Start"
+      },
+      "grid_first_1_stop": {
+        "name": "Grid First Fenster 1 Ende"
+      },
+      "battery_first_1_start": {
+        "name": "Battery First Fenster 1 Start"
+      },
+      "battery_first_1_stop": {
+        "name": "Battery First Fenster 1 Ende"
+      },
+      "grid_first_2_start": {
+        "name": "Grid First Fenster 2 Start"
+      },
+      "grid_first_2_stop": {
+        "name": "Grid First Fenster 2 Ende"
+      },
+      "battery_first_2_start": {
+        "name": "Battery First Fenster 2 Start"
+      },
+      "battery_first_2_stop": {
+        "name": "Battery First Fenster 2 Ende"
+      },
+      "grid_first_3_start": {
+        "name": "Grid First Fenster 3 Start"
+      },
+      "grid_first_3_stop": {
+        "name": "Grid First Fenster 3 Ende"
+      },
+      "battery_first_3_start": {
+        "name": "Battery First Fenster 3 Start"
+      },
+      "battery_first_3_stop": {
+        "name": "Battery First Fenster 3 Ende"
       }
     }
   }

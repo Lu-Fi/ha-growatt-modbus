@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Growatt Modbus",
+        "title": "Growatt SPH Modbus",
         "description": "How is the inverter connected?",
         "menu_options": {
           "serial": "Serial (RS485 / USB adapter)",
@@ -48,7 +48,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Growatt Modbus options",
+        "title": "Growatt SPH Modbus options",
         "data": {
           "scan_interval": "Polling interval, live values (seconds)",
           "notify_enabled": "Notify on faults",
@@ -377,6 +377,14 @@
       },
       "clock_drift": {
         "name": "Clock drift"
+      },
+      "priority": {
+        "name": "Priority",
+        "state": {
+          "load_first": "Load first",
+          "battery_first": "Battery first",
+          "grid_first": "Grid first"
+        }
       }
     },
     "binary_sensor": {
@@ -396,29 +404,91 @@
       },
       "export_limit_rate": {
         "name": "Export limit rate"
+      },
+      "grid_first_rate": {
+        "name": "Grid First discharge rate"
+      },
+      "grid_first_stop_soc": {
+        "name": "Grid First stop SoC"
+      },
+      "battery_first_rate": {
+        "name": "Battery First charge rate"
+      },
+      "battery_first_stop_soc": {
+        "name": "Battery First stop SoC"
       }
     },
-    "select": {
-      "priority": {
-        "name": "Priority",
-        "state": {
-          "load_first": "Load first",
-          "battery_first": "Battery first",
-          "grid_first": "Grid first"
-        }
-      }
-    },
+    "select": {},
     "switch": {
       "power_state": {
         "name": "Power"
       },
       "export_limit": {
         "name": "Export limit"
+      },
+      "ac_charge": {
+        "name": "AC charging"
+      },
+      "grid_first_1_enable": {
+        "name": "Grid First window 1"
+      },
+      "grid_first_2_enable": {
+        "name": "Grid First window 2"
+      },
+      "grid_first_3_enable": {
+        "name": "Grid First window 3"
+      },
+      "battery_first_1_enable": {
+        "name": "Battery First window 1"
+      },
+      "battery_first_2_enable": {
+        "name": "Battery First window 2"
+      },
+      "battery_first_3_enable": {
+        "name": "Battery First window 3"
       }
     },
     "button": {
       "sync_clock": {
         "name": "Synchronize clock"
+      }
+    },
+    "time": {
+      "grid_first_1_start": {
+        "name": "Grid First window 1 start"
+      },
+      "grid_first_1_stop": {
+        "name": "Grid First window 1 end"
+      },
+      "battery_first_1_start": {
+        "name": "Battery First window 1 start"
+      },
+      "battery_first_1_stop": {
+        "name": "Battery First window 1 end"
+      },
+      "grid_first_2_start": {
+        "name": "Grid First window 2 start"
+      },
+      "grid_first_2_stop": {
+        "name": "Grid First window 2 end"
+      },
+      "battery_first_2_start": {
+        "name": "Battery First window 2 start"
+      },
+      "battery_first_2_stop": {
+        "name": "Battery First window 2 end"
+      },
+      "grid_first_3_start": {
+        "name": "Grid First window 3 start"
+      },
+      "grid_first_3_stop": {
+        "name": "Grid First window 3 end"
+      },
+      "battery_first_3_start": {
+        "name": "Battery First window 3 start"
+      },
+      "battery_first_3_stop": {
+        "name": "Battery First window 3 end"
       }
     }
   }

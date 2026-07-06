@@ -110,6 +110,18 @@ class SwitchDef:
 
 
 @dataclass(frozen=True)
+class TimeWindowDef:
+    """A start/stop time window (hour in high byte, minute in low byte).
+
+    The matching enable register is modeled as a separate SwitchDef.
+    """
+
+    key: str
+    start_address: int
+    stop_address: int
+
+
+@dataclass(frozen=True)
 class DeviceProfile:
     """Complete register map of one inverter series."""
 
@@ -121,6 +133,7 @@ class DeviceProfile:
     numbers: tuple[NumberDef, ...] = ()
     selects: tuple[SelectDef, ...] = ()
     switches: tuple[SwitchDef, ...] = ()
+    time_windows: tuple[TimeWindowDef, ...] = ()
     firmware_register: int | None = None  # holding register with modbus version
     # (start, count) of ASCII serial number holding registers, or None
     serial_registers: tuple[int, int] | None = None
@@ -150,6 +163,9 @@ class DeviceProfile:
             needed[REG_HOLDING].add(select.address)
         for switch in self.switches:
             needed[REG_HOLDING].add(switch.address)
+        for window in self.time_windows:
+            needed[REG_HOLDING].add(window.start_address)
+            needed[REG_HOLDING].add(window.stop_address)
         if self.firmware_register is not None:
             needed[REG_HOLDING].add(self.firmware_register)
         for ascii_range in (
@@ -216,6 +232,9 @@ class DeviceProfile:
             settings.add(select.address)
         for switch in self.switches:
             settings.add(switch.address)
+        for window in self.time_windows:
+            settings.add(window.start_address)
+            settings.add(window.stop_address)
         if self.firmware_register is not None:
             settings.add(self.firmware_register)
         for ascii_range in (
@@ -396,6 +415,15 @@ SPH_ENUMS: tuple[EnumDef, ...] = (
         1037,
         {0: "wired_ct", 1: "wireless_ct", 2: "meter"},
     ),
+    # Read-only: the active mode results from the enabled time windows
+    # (Load First is the default outside any window); holding 1044 is
+    # marked "R" in the protocol and cannot be written.
+    EnumDef(
+        "priority",
+        REG_HOLDING,
+        1044,
+        {0: "load_first", 1: "battery_first", 2: "grid_first"},
+    ),
 )
 
 SPH_FAULTS: tuple[FaultDef, ...] = (
@@ -512,16 +540,38 @@ SPH_NUMBERS: tuple[NumberDef, ...] = (
     NumberDef("max_output_active_power", 3, 0, 100, 1, 1, "%", None),
     # Export limit rate, holding 123, 0.1 % steps (protocol V1.20)
     NumberDef("export_limit_rate", 123, 0, 100, 0.5, 0.1, "%", None),
+    # Grid First (forced discharge) settings
+    NumberDef("grid_first_rate", 1070, 0, 100, 1, 1, "%", None),
+    NumberDef("grid_first_stop_soc", 1071, 0, 100, 1, 1, "%", "battery"),
+    # Battery First (forced charge) settings
+    NumberDef("battery_first_rate", 1090, 0, 100, 1, 1, "%", None),
+    NumberDef("battery_first_stop_soc", 1091, 0, 100, 1, 1, "%", "battery"),
 )
 
-SPH_SELECTS: tuple[SelectDef, ...] = (
-    SelectDef("priority", 1044, {0: "load_first", 1: "battery_first", 2: "grid_first"}),
-)
+SPH_SELECTS: tuple[SelectDef, ...] = ()
 
 SPH_SWITCHES: tuple[SwitchDef, ...] = (
     SwitchDef("power_state", 0, 1, 0),
     # Export limitation (zero feed-in), holding 122 (protocol V1.20)
     SwitchDef("export_limit", 122, 1, 0),
+    # AC charging (grid -> battery) when Battery First is active
+    SwitchDef("ac_charge", 1092, 1, 0),
+    # Enable switches of the Grid First / Battery First time windows
+    SwitchDef("grid_first_1_enable", 1082, 1, 0),
+    SwitchDef("grid_first_2_enable", 1085, 1, 0),
+    SwitchDef("grid_first_3_enable", 1088, 1, 0),
+    SwitchDef("battery_first_1_enable", 1102, 1, 0),
+    SwitchDef("battery_first_2_enable", 1105, 1, 0),
+    SwitchDef("battery_first_3_enable", 1108, 1, 0),
+)
+
+SPH_TIME_WINDOWS: tuple[TimeWindowDef, ...] = (
+    TimeWindowDef("grid_first_1", 1080, 1081),
+    TimeWindowDef("grid_first_2", 1083, 1084),
+    TimeWindowDef("grid_first_3", 1086, 1087),
+    TimeWindowDef("battery_first_1", 1100, 1101),
+    TimeWindowDef("battery_first_2", 1103, 1104),
+    TimeWindowDef("battery_first_3", 1106, 1107),
 )
 
 SPH_PROFILE = DeviceProfile(
@@ -533,6 +583,7 @@ SPH_PROFILE = DeviceProfile(
     numbers=SPH_NUMBERS,
     selects=SPH_SELECTS,
     switches=SPH_SWITCHES,
+    time_windows=SPH_TIME_WINDOWS,
     firmware_register=88,
     serial_registers=(23, 5),
     firmware_ascii_registers=(9, 3),
@@ -569,6 +620,7 @@ SPH_TL3_PROFILE = DeviceProfile(
     numbers=SPH_NUMBERS,
     selects=SPH_SELECTS,
     switches=SPH_SWITCHES,
+    time_windows=SPH_TIME_WINDOWS,
     firmware_register=88,
     serial_registers=(23, 5),
     firmware_ascii_registers=(9, 3),
