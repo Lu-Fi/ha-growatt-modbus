@@ -385,6 +385,12 @@
           "battery_first": "Batterie zuerst",
           "grid_first": "Netz zuerst"
         }
+      },
+      "active_faults": {
+        "name": "Aktive Störungen"
+      },
+      "last_fault": {
+        "name": "Letzte Störung"
       }
     },
     "binary_sensor": {

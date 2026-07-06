@@ -10,6 +10,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import DOMAIN
 from .coordinator import GrowattCoordinator
@@ -37,6 +38,9 @@ async def async_setup_entry(
     )
     if coordinator.profile.clock_register is not None:
         entities.append(GrowattClockDriftSensor(coordinator))
+    if coordinator.profile.faults:
+        entities.append(GrowattActiveFaultsSensor(coordinator))
+        entities.append(GrowattLastFaultSensor(coordinator))
     async_add_entities(entities)
 
 
@@ -111,6 +115,61 @@ class GrowattClockDriftSensor(GrowattEntity, SensorEntity):
         inverter_time = self.coordinator.inverter_time()
         return {
             "inverter_time": inverter_time.isoformat() if inverter_time else None
+        }
+
+
+class GrowattActiveFaultsSensor(GrowattEntity, SensorEntity):
+    """Decoded names of all currently active (non-warning) fault bits."""
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_icon = "mdi:alert-circle-outline"
+
+    def __init__(self, coordinator: GrowattCoordinator) -> None:
+        super().__init__(coordinator, "active_faults")
+
+    @property
+    def native_value(self) -> str:
+        return ", ".join(self.coordinator.active_faults) or "OK"
+
+
+class GrowattLastFaultSensor(GrowattEntity, RestoreEntity, SensorEntity):
+    """The most recent fault with start/end timestamps, kept after clearing.
+
+    Restored across restarts so the diagnosis of a past fault survives.
+    """
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_icon = "mdi:history"
+
+    def __init__(self, coordinator: GrowattCoordinator) -> None:
+        super().__init__(coordinator, "last_fault")
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        last = await self.async_get_last_state()
+        if (
+            last is not None
+            and self.coordinator.last_fault is None
+            and last.state not in ("unknown", "unavailable", "-")
+        ):
+            self.coordinator.last_fault = {
+                "faults": last.state,
+                "started_at": last.attributes.get("started_at"),
+                "cleared_at": last.attributes.get("cleared_at"),
+            }
+
+    @property
+    def native_value(self) -> str:
+        if self.coordinator.last_fault is None:
+            return "-"
+        return self.coordinator.last_fault.get("faults") or "-"
+
+    @property
+    def extra_state_attributes(self) -> dict[str, str | None]:
+        last = self.coordinator.last_fault or {}
+        return {
+            "started_at": last.get("started_at"),
+            "cleared_at": last.get("cleared_at"),
         }
 
 

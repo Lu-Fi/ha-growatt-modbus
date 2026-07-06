@@ -385,6 +385,12 @@
           "battery_first": "Battery first",
           "grid_first": "Grid first"
         }
+      },
+      "active_faults": {
+        "name": "Active faults"
+      },
+      "last_fault": {
+        "name": "Last fault"
       }
     },
     "binary_sensor": {

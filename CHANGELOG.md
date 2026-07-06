@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.8.0] - 2026-07-06
+
+### Added
+- "Active faults" sensor: decoded names of all currently active fault
+  bits in plain text ("OK" when clear)
+- "Last fault" sensor: keeps the decoded fault names of the most recent
+  fault with start/end timestamps, restored across restarts — so a
+  fault can still be diagnosed after it cleared
+
 ## [0.7.0] - 2026-07-06
 
 ### Added

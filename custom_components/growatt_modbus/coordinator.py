@@ -76,6 +76,9 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
         }
         self._next_due = {GROUP_ENERGY: 0.0, GROUP_SETTINGS: 0.0}
         self.settings_read_at: datetime | None = None
+        # Decoded fault diagnostics for the active/last fault sensors
+        self.active_faults: list[str] = []
+        self.last_fault: dict[str, str | None] | None = None
 
     async def _async_update_data(self) -> RegisterData:
         now = time.monotonic()
@@ -158,6 +161,26 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
             return
         has_fault, names = summary
         previous, self._had_fault = self._had_fault, has_fault
+
+        # Bookkeeping for the "active faults" / "last fault" sensors.
+        self.active_faults = names
+        now_iso = dt_util.now().isoformat()
+        if has_fault:
+            if self.last_fault is None or self.last_fault.get("cleared_at"):
+                self.last_fault = {
+                    "faults": "",
+                    "started_at": now_iso,
+                    "cleared_at": None,
+                }
+            known = set(filter(None, (self.last_fault["faults"] or "").split(", ")))
+            self.last_fault["faults"] = ", ".join(sorted(known | set(names)))
+        elif (
+            previous is True
+            and self.last_fault
+            and self.last_fault.get("cleared_at") is None
+        ):
+            self.last_fault["cleared_at"] = now_iso
+
         # No notification on the very first poll or without a change.
         if previous is None or previous == has_fault:
             return
