@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs><clipPath id="b"><rect x="28" y="28" width="456" height="456" rx="108"></rect></clipPath></defs>
+<rect x="28" y="28" width="456" height="456" rx="108" fill="#1FA24A"></rect>
+<g clip-path="url(#b)"><image x="41" y="41" width="430" height="430"></image></g>
+<g stroke="#FFD84D" stroke-width="24" stroke-linecap="round"><line x1="256" y1="96" x2="256" y2="150" transform="rotate(0 256 256)"></line><line x1="256" y1="96" x2="256" y2="150" transform="rotate(30 256 256)"></line><line x1="256" y1="96" x2="256" y2="150" transform="rotate(60 256 256)"></line><line x1="256" y1="96" x2="256" y2="150" transform="rotate(90 256 256)"></line><line x1="256" y1="96" x2="256" y2="150" transform="rotate(120 256 256)"></line><line x1="256" y1="96" x2="256" y2="150" transform="rotate(150 256 256)"></line><line x1="256" y1="96" x2="256" y2="150" transform="rotate(180 256 256)"></line><line x1="256" y1="96" x2="256" y2="150" transform="rotate(210 256 256)"></line><line x1="256" y1="96" x2="256" y2="150" transform="rotate(240 256 256)"></line><line x1="256" y1="96" x2="256" y2="150" transform="rotate(270 256 256)"></line><line x1="256" y1="96" x2="256" y2="150" transform="rotate(300 256 256)"></line><line x1="256" y1="96" x2="256" y2="150" transform="rotate(330 256 256)"></line></g>
+<circle cx="256" cy="256" r="96" fill="#FFD84D"></circle>
+<path d="M11 15H6L13 1V9H18L11 23V15Z" fill="#1FA24A" transform="translate(172,172) scale(7)"></path>
+</svg>
