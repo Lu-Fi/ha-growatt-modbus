@@ -397,7 +397,7 @@
     },
     "number": {
       "discharge_soc_min": {
-        "name": "Minimaler Entlade-SOC"
+        "name": "Load First Stop-SOC"
       },
       "max_output_active_power": {
         "name": "Maximale Wirkleistung"

@@ -397,7 +397,7 @@
     },
     "number": {
       "discharge_soc_min": {
-        "name": "Minimum discharge SoC"
+        "name": "Load First stop SoC"
       },
       "max_output_active_power": {
         "name": "Maximum active power"
