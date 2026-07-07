@@ -1,5 +1,12 @@
 # Growatt SPH Modbus for Home Assistant
 
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+[![GitHub release](https://img.shields.io/github/release/Lu-Fi/ha-growatt-modbus.svg)](https://github.com/Lu-Fi/ha-growatt-modbus/releases)
+[![Downloads](https://img.shields.io/github/downloads/Lu-Fi/ha-growatt-modbus/total.svg)](https://github.com/Lu-Fi/ha-growatt-modbus/releases)
+[![Validate](https://github.com/Lu-Fi/ha-growatt-modbus/actions/workflows/validate.yml/badge.svg)](https://github.com/Lu-Fi/ha-growatt-modbus/actions/workflows/validate.yml)
+[![GitHub last commit](https://img.shields.io/github/last-commit/Lu-Fi/ha-growatt-modbus.svg)](https://github.com/Lu-Fi/ha-growatt-modbus/commits)
+[![License](https://img.shields.io/github/license/Lu-Fi/ha-growatt-modbus.svg)](https://github.com/Lu-Fi/ha-growatt-modbus/blob/main/LICENSE)
+
 Local Modbus integration for Growatt hybrid inverters (SPH / SPH TL3 series) — no cloud, no ShineServer.
 
 *Lokale Modbus-Integration für Growatt-Hybrid-Wechselrichter (SPH / SPH TL3) — ohne Cloud, ohne ShineServer. Deutsche Beschreibung weiter unten.*
