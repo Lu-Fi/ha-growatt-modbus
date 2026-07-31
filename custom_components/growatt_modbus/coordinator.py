@@ -258,10 +258,10 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
         if value is None:
             return None
         scaled = value * defn.scale
-        if defn.precision is not None:
-            scaled = round(scaled, defn.precision)
-            if defn.precision == 0:
-                scaled = int(scaled)
+        precision = defn.precision if defn.precision is not None else 2
+        scaled = round(scaled, precision)
+        if precision == 0:
+            scaled = int(scaled)
         return scaled
 
     def _derived_value(self, defn: SensorDef) -> float | None:
@@ -275,7 +275,7 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
             raw = self.raw_value(REG_INPUT, defn.address)
             if raw is None:
                 return None
-            return round(raw / 10000, 3)
+            return round(raw / 10000, 2)
         return None
 
     def enum_value(self, defn: EnumDef) -> str | None:
