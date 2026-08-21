@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.8.1] - 2026-08-21
+
+### Fixed
+- **Fault notifications could fail silently.** The `notify.send_message` call in the coordinator's fault-change handler used the default `blocking=False`, so a real delivery failure happened in a detached background task the surrounding `try`/`except` never saw. Now calls with `blocking=True`, so a failure is at least logged instead of vanishing (same class of bug already fixed in the sibling `ha-em2go-pvsc` and `ha-lacrosse-jeelink` integrations).
+- `hacs.json` didn't declare a Home Assistant floor. The in-tree `custom_components/growatt_modbus/brand/` icons only load on 2026.3+, so declared `"homeassistant": "2026.3.0"` explicitly instead of leaving it unbounded.
+
 ## [0.8.0] - 2026-07-06
 
 ### Added

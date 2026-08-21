@@ -208,6 +208,7 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
                 "notify",
                 "send_message",
                 {"entity_id": notify_entity, "message": message},
+                blocking=True,
             )
         except Exception:  # noqa: BLE001 - notification must never break polling
             _LOGGER.exception("Fault notification via %s failed", notify_entity)
