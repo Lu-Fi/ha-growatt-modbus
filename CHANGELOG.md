@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.9.0] - 2026-08-25
+
+### Changed
+
+- **BREAKING: domain renamed from `growatt_modbus` to `growatt_modbus_lufi`.** The `growatt_modbus` domain (and its `custom_components/growatt_modbus/` install path) was already claimed by two other HACS-listed integrations (`jacobbjerregaard/homeassistant-growatt-modbus`, `0xAHA/Growatt_ModbusTCP`); anyone with one of those installed and then this one would have silently overwritten it, with no way for HACS to warn them. Existing installs must remove the old config entry, replace `custom_components/growatt_modbus/` with `custom_components/growatt_modbus_lufi/`, restart, and re-add the integration with the same connection settings. Entity unique IDs are tied to the config entry, not the domain, so as long as the old entry is removed before the new one is added, entities are recreated under the same entity IDs and recorder history keeps lining up under those IDs.
+
+### Fixed
+
+- README listed a writable priority select (Load/Battery/Grid) that doesn't exist — the underlying holding register is read-only per the protocol, so `SPH_SELECTS` has always been empty and no select entity is ever created. Dropped the claim from the feature list.
+
 ## [0.8.1] - 2026-08-21
 
 ### Fixed

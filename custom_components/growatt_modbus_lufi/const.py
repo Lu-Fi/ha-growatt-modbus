@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from homeassistant.const import Platform
 
-DOMAIN = "growatt_modbus"
+DOMAIN = "growatt_modbus_lufi"
 
 MANUFACTURER = "Growatt"
 

@@ -1,5 +1,5 @@
 {
-  "domain": "growatt_modbus",
+  "domain": "growatt_modbus_lufi",
   "name": "Growatt SPH Modbus",
   "codeowners": ["@Lu-Fi"],
   "config_flow": true,
@@ -8,7 +8,7 @@
   "integration_type": "device",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/Lu-Fi/ha-growatt-modbus/issues",
-  "loggers": ["custom_components.growatt_modbus"],
+  "loggers": ["custom_components.growatt_modbus_lufi"],
   "requirements": ["pymodbus>=3.6.0"],
-  "version": "0.8.1"
+  "version": "0.9.0"
 }

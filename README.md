@@ -19,7 +19,7 @@ Local Modbus integration for Growatt hybrid inverters (SPH / SPH TL3 series) —
 - **Efficient polling**: registers are read in blocks (6 transactions per cycle instead of ~90 single reads)
 - **Multilingual**: English and German UI, translated enum states (status, priority, derating, ...)
 - **65+ entities** per inverter: PV, grid (per-phase on TL3), battery, EPS, energy counters, temperatures, fault registers
-- **Writable settings**: power on/off (switch), priority Load/Battery/Grid (select), minimum discharge SoC and maximum active power (numbers)
+- **Writable settings**: power on/off (switch), minimum discharge SoC and maximum active power (numbers)
 - **Extensible profiles**: register maps live in `registers.py`; adding another Growatt series (MIN, MOD, SPA, MAX, ...) only requires a new `DeviceProfile`
 - Diagnostics download with raw register dump for easy debugging
 
@@ -86,7 +86,7 @@ Based on the official protocol documents "Growatt PV Inverter Modbus RS485 RTU P
 
 ### Manual
 
-Copy `custom_components/growatt_modbus` into your `config/custom_components/` folder and restart.
+Copy `custom_components/growatt_modbus_lufi` into your `config/custom_components/` folder and restart.
 
 ## Setup
 
@@ -120,7 +120,7 @@ Lokale Anbindung von Growatt-Hybrid-Wechselrichtern (SPH / SPH TL3) über Modbus
 - **Mehrere Wechselrichter**: pro Wechselrichter ein Eintrag; mehrere Slave-IDs können sich denselben RS485-Bus teilen
 - **Effizient**: Registerblöcke statt Einzelabfragen
 - **Zweisprachig**: Deutsch und Englisch, inklusive übersetzter Zustände
-- **Schreibbare Einstellungen**: Ein/Aus, Priorität (Last/Batterie/Netz), minimaler Entlade-SOC, maximale Wirkleistung
+- **Schreibbare Einstellungen**: Ein/Aus, minimaler Entlade-SOC, maximale Wirkleistung
 - **3-phasige TL3-Geräte**: zusätzliche Sensoren je Phase (Netzspannung/-leistung L1–L3, Außenleiterspannungen, EPS je Phase) — ungetestet, Rückmeldungen willkommen
 
 Einrichtung über *Einstellungen → Geräte & Dienste → Integration hinzufügen → Growatt Modbus*. Für einen zweiten Wechselrichter die Integration einfach erneut mit anderer Slave-ID hinzufügen. Das Abfrageintervall lässt sich unter *Konfigurieren* ändern.
