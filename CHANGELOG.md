@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.9.1] - 2026-08-30
+
+### Fixed
+
+- Screenshot images on the HACS repository page were broken (`<img src="docs/...png">` relative paths, which github.com rewrites against the repo root but HACS's own README renderer does not). Switched to absolute `raw.githubusercontent.com` URLs.
+
 ## [0.9.0] - 2026-08-25
 
 ### Changed
