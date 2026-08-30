@@ -31,14 +31,14 @@ Local Modbus integration for Growatt hybrid inverters (SPH / SPH TL3 series) —
 
 **Integration overview**
 
-<img src="docs/01-integration-overview.png" alt="Integration entry listing the Growatt SPH 4600 device with 103 entities">
+<img src="https://raw.githubusercontent.com/Lu-Fi/ha-growatt-modbus/main/docs/01-integration-overview.png" alt="Integration entry listing the Growatt SPH 4600 device with 103 entities">
 
 </td>
 <td align="center" width="50%">
 
 **Device page — control & activity**
 
-<img src="docs/02-device-page.png" alt="Device page with Steuerung switches (AC-Laden, Battery/Grid First windows, Betrieb) and activity log">
+<img src="https://raw.githubusercontent.com/Lu-Fi/ha-growatt-modbus/main/docs/02-device-page.png" alt="Device page with Steuerung switches (AC-Laden, Battery/Grid First windows, Betrieb) and activity log">
 
 </td>
 </tr>
@@ -47,14 +47,14 @@ Local Modbus integration for Growatt hybrid inverters (SPH / SPH TL3 series) —
 
 **Configuration**
 
-<img src="docs/04-konfiguration.png" alt="Configuration card: Battery/Grid First time windows, load/discharge rates and stop-SOC settings" width="380">
+<img src="https://raw.githubusercontent.com/Lu-Fi/ha-growatt-modbus/main/docs/04-konfiguration.png" alt="Configuration card: Battery/Grid First time windows, load/discharge rates and stop-SOC settings" width="380">
 
 </td>
 <td align="center" width="50%">
 
 **Diagnostics**
 
-<img src="docs/05-diagnose.png" alt="Diagnostics card: battery health, BMS current, fault registers, firmware/Modbus version" width="380">
+<img src="https://raw.githubusercontent.com/Lu-Fi/ha-growatt-modbus/main/docs/05-diagnose.png" alt="Diagnostics card: battery health, BMS current, fault registers, firmware/Modbus version" width="380">
 
 </td>
 </tr>
@@ -62,11 +62,11 @@ Local Modbus integration for Growatt hybrid inverters (SPH / SPH TL3 series) —
 
 **All sensors**
 
-<img src="docs/03-sensoren.png" alt="Full list of sensor entities exposed by the integration" width="400">
+<img src="https://raw.githubusercontent.com/Lu-Fi/ha-growatt-modbus/main/docs/03-sensoren.png" alt="Full list of sensor entities exposed by the integration" width="400">
 
 **Options dialog**
 
-<img src="docs/06-modbus-optionen.png" alt="Options dialog: polling intervals and fault notification settings" width="450">
+<img src="https://raw.githubusercontent.com/Lu-Fi/ha-growatt-modbus/main/docs/06-modbus-optionen.png" alt="Options dialog: polling intervals and fault notification settings" width="450">
 
 ## Supported devices
 
