@@ -39,6 +39,9 @@
     },
     "error": {
       "cannot_connect": "Failed to connect to the inverter. Check port, wiring and slave ID. Note: the serial port must not be used by another integration at the same time.",
+      "cannot_detect": "The inverter answered, but its type could not be detected (holding registers 43/44). Pick the inverter series manually instead of 'Auto detect'.",
+      "not_storage_inverter": "The device answered, but does not provide the SPH storage registers. This integration only supports the SPH / SPH TL3 hybrid series — setting up another Growatt series here could write settings to the wrong registers.",
+      "baudrate_mismatch": "Another inverter is already configured on this serial port with a different baud rate. All inverters on one port share a connection and must use the same baud rate.",
       "unknown": "Unexpected error, see the log for details."
     },
     "abort": {

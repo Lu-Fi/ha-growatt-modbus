@@ -144,51 +144,6 @@ class DeviceProfile:
     # First of six holding registers (Y/M/D/h/m/s) for the system clock
     clock_register: int | None = None
 
-    def required_registers(self) -> dict[str, set[int]]:
-        """All register addresses that must be polled, per register type."""
-        needed: dict[str, set[int]] = {REG_INPUT: set(), REG_HOLDING: set()}
-        for sensor in self.sensors:
-            if sensor.register_type == REG_DERIVED:
-                continue
-            needed[sensor.register_type].add(sensor.address)
-            if sensor.data_type == "u32":
-                needed[sensor.register_type].add(sensor.address + 1)
-        for enum in self.enums:
-            needed[enum.register_type].add(enum.address)
-        for fault in self.faults:
-            needed[REG_INPUT].add(fault.address)
-        for number in self.numbers:
-            needed[REG_HOLDING].add(number.address)
-        for select in self.selects:
-            needed[REG_HOLDING].add(select.address)
-        for switch in self.switches:
-            needed[REG_HOLDING].add(switch.address)
-        for window in self.time_windows:
-            needed[REG_HOLDING].add(window.start_address)
-            needed[REG_HOLDING].add(window.stop_address)
-        if self.firmware_register is not None:
-            needed[REG_HOLDING].add(self.firmware_register)
-        for ascii_range in (
-            self.serial_registers,
-            self.firmware_ascii_registers,
-            self.control_firmware_registers,
-        ):
-            if ascii_range is not None:
-                start, count = ascii_range
-                needed[REG_HOLDING].update(range(start, start + count))
-        if self.clock_register is not None:
-            needed[REG_HOLDING].update(
-                range(self.clock_register, self.clock_register + 6)
-            )
-        return needed
-
-    def read_blocks(self) -> dict[str, list[tuple[int, int]]]:
-        """Group required registers into efficient (address, count) blocks."""
-        blocks: dict[str, list[tuple[int, int]]] = {}
-        for reg_type, addresses in self.required_registers().items():
-            blocks[reg_type] = _plan_blocks(sorted(addresses))
-        return blocks
-
     def polling_plan(self) -> dict[str, dict[str, list[tuple[int, int]]]]:
         """Read blocks per polling group: fast / energy / settings.
 
@@ -300,7 +255,7 @@ SPH_SENSORS: tuple[SensorDef, ...] = (
     SensorDef("grid_voltage_l1", REG_INPUT, 38, "u16", 0.1, 1, "V", "voltage", "measurement"),
     SensorDef("grid_output_power_l1", REG_INPUT, 40, "u32", 0.1, 1, "W", "power", "measurement"),
     SensorDef("output_power_percent", REG_INPUT, 101, "u16", 1, 0, "%", None, "measurement"),
-    SensorDef("power_factor", REG_DERIVED, 100, state_class="measurement"),
+    SensorDef("power_factor", REG_DERIVED, 100, device_class="power_factor", state_class="measurement"),
     # Temperatures
     SensorDef("inverter_temperature", REG_INPUT, 93, "u16", 0.1, 1, "°C", "temperature", "measurement"),
     SensorDef("ipm_temperature", REG_INPUT, 94, "u16", 0.1, 1, "°C", "temperature", "measurement", diagnostic=True),

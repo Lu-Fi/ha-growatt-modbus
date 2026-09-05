@@ -1,7 +1,10 @@
 """Constants for the Growatt Modbus integration."""
 from __future__ import annotations
 
-from homeassistant.const import Platform
+from collections.abc import Mapping
+from typing import Any
+
+from homeassistant.const import CONF_HOST, CONF_PORT, Platform
 
 DOMAIN = "growatt_modbus_lufi"
 
@@ -47,3 +50,14 @@ BAUDRATES = [9600, 19200, 38400, 57600, 115200]
 
 # Internal storage key for shared modbus clients (one per physical bus)
 DATA_CLIENTS = "_clients"
+
+
+def bus_key(data: Mapping[str, Any]) -> str:
+    """Identify the physical bus described by a config entry's data.
+
+    Entries sharing a key share one modbus client, so the config flow can
+    look up a live client the same way the setup does.
+    """
+    if data[CONF_CONNECTION_TYPE] == CONNECTION_SERIAL:
+        return f"serial:{data[CONF_SERIAL_PORT]}"
+    return f"tcp:{data[CONF_HOST]}:{data.get(CONF_PORT, DEFAULT_TCP_PORT)}"

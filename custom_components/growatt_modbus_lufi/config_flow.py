@@ -13,7 +13,7 @@ from homeassistant.config_entries import (
     OptionsFlow,
 )
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT
-from homeassistant.core import callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import selector
 
 from .const import (
@@ -22,6 +22,7 @@ from .const import (
     CONF_NOTIFY_ENABLED,
     CONF_NOTIFY_ENTITY,
     CONF_SETTINGS_SCAN_INTERVAL,
+    DATA_CLIENTS,
     DEFAULT_ENERGY_SCAN_INTERVAL,
     DEFAULT_SETTINGS_SCAN_INTERVAL,
     CONF_BAUDRATE,
@@ -39,6 +40,7 @@ from .const import (
     DEFAULT_TCP_PORT,
     DOMAIN,
     PROFILE_AUTO,
+    bus_key,
 )
 from .modbus_client import GrowattModbusClient, GrowattModbusError
 from .registers import (
@@ -57,50 +59,74 @@ def _profile_schema() -> vol.In:
     return vol.In(choices)
 
 
-async def _validate_connection(data: dict[str, Any]) -> tuple[str | None, str]:
+def _new_client(data: dict[str, Any]) -> GrowattModbusClient:
+    """Build a throwaway client for the connection described by ``data``."""
+    if data[CONF_CONNECTION_TYPE] == CONNECTION_SERIAL:
+        return GrowattModbusClient(
+            CONNECTION_SERIAL,
+            serial_port=data[CONF_SERIAL_PORT],
+            baudrate=data.get(CONF_BAUDRATE, DEFAULT_BAUDRATE),
+        )
+    return GrowattModbusClient(
+        CONNECTION_TCP,
+        host=data[CONF_HOST],
+        port=data.get(CONF_PORT, DEFAULT_TCP_PORT),
+    )
+
+
+async def _validate_connection(
+    hass: HomeAssistant, data: dict[str, Any]
+) -> tuple[str | None, str]:
     """Try to reach the inverter.
 
     Returns (error_key, resolved_profile). When the profile is set to
     "auto", the inverter type is detected from holding registers 43/44
     (device type code + tracker/phase count).
     """
-    if data[CONF_CONNECTION_TYPE] == CONNECTION_SERIAL:
-        client = GrowattModbusClient(
-            CONNECTION_SERIAL,
-            serial_port=data[CONF_SERIAL_PORT],
-            baudrate=data.get(CONF_BAUDRATE, DEFAULT_BAUDRATE),
-        )
-    else:
-        client = GrowattModbusClient(
-            CONNECTION_TCP,
-            host=data[CONF_HOST],
-            port=data.get(CONF_PORT, DEFAULT_TCP_PORT),
-        )
+    # Reuse the live client when another entry already talks to this bus:
+    # cheap RS485-Ethernet gateways accept only one TCP client, so probing
+    # with a second one either fails or kicks the running inverter off.
+    clients: dict[str, list] = hass.data.get(DOMAIN, {}).get(DATA_CLIENTS, {})
+    shared = clients.get(bus_key(data))
+    client = shared[0] if shared is not None else _new_client(data)
     profile = data.get(CONF_PROFILE, PROFILE_AUTO)
     try:
         await client.test_connection(data[CONF_SLAVE_ID])
+        # Both profiles write into the SPH storage range (holding 608 and
+        # 1070-1108). Input register 1000 is the storage inverter mode and
+        # is read on every poll, so an SPH always answers it — another
+        # Growatt series generally does not, and must not be set up here
+        # with a register map whose write addresses mean something else.
+        try:
+            await client.read_registers("input", 1000, 1, data[CONF_SLAVE_ID])
+        except GrowattModbusError as err:
+            _LOGGER.warning("Storage register probe (input 1000) failed: %s", err)
+            return "not_storage_inverter", DEFAULT_PROFILE
         if profile == PROFILE_AUTO:
-            profile = DEFAULT_PROFILE
             try:
                 regs = await client.read_registers(
                     "holding", REG_DEVICE_TYPE_CODE, 2, data[CONF_SLAVE_ID]
                 )
-                trackers, phases = parse_tracker_phase(regs[1])
-                profile = profile_for_phase_count(phases)
-                _LOGGER.info(
-                    "Detected Growatt inverter: DTC=%s, %s tracker(s), "
-                    "%s phase(s) -> profile '%s'",
-                    regs[0],
-                    trackers,
-                    phases,
-                    profile,
-                )
             except GrowattModbusError as err:
+                _LOGGER.warning("Auto detection failed: %s", err)
+                return "cannot_detect", DEFAULT_PROFILE
+            trackers, phases = parse_tracker_phase(regs[1])
+            if not 1 <= phases <= 3:
+                # Not the documented tracker/phase encoding: guessing a
+                # profile from it would be guessing the whole register map.
                 _LOGGER.warning(
-                    "Auto detection failed (%s), falling back to profile '%s'",
-                    err,
-                    profile,
+                    "Implausible tracker/phase register 44 (0x%04X)", regs[1]
                 )
+                return "cannot_detect", DEFAULT_PROFILE
+            profile = profile_for_phase_count(phases)
+            _LOGGER.info(
+                "Detected Growatt inverter: DTC=%s, %s tracker(s), "
+                "%s phase(s) -> profile '%s'",
+                regs[0],
+                trackers,
+                phases,
+                profile,
+            )
     except GrowattModbusError as err:
         _LOGGER.warning("Connection test failed: %s", err)
         return "cannot_connect", profile
@@ -108,7 +134,9 @@ async def _validate_connection(data: dict[str, Any]) -> tuple[str | None, str]:
         _LOGGER.exception("Unexpected error during connection test")
         return "unknown", profile
     finally:
-        client.close()
+        # Never close a client that belongs to a running config entry.
+        if shared is None:
+            client.close()
     return None, profile
 
 
@@ -116,6 +144,23 @@ class GrowattModbusConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle the config flow (one entry per inverter)."""
 
     VERSION = 1
+
+    def _baudrate_conflict(self, serial_port: str, baudrate: int) -> bool:
+        """True if another entry already drives this port at another speed.
+
+        Entries on the same serial port share one client, which is opened
+        with the baud rate of whichever entry set it up first — a second
+        entry with a different rate would validate fine (own client) and
+        then never talk to its inverter again.
+        """
+        for entry in self._async_current_entries():
+            if entry.data.get(CONF_CONNECTION_TYPE) != CONNECTION_SERIAL:
+                continue
+            if entry.data.get(CONF_SERIAL_PORT) != serial_port:
+                continue
+            if entry.data.get(CONF_BAUDRATE, DEFAULT_BAUDRATE) != baudrate:
+                return True
+        return False
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -142,13 +187,20 @@ class GrowattModbusConfigFlow(ConfigFlow, domain=DOMAIN):
             unique_id = f"serial-{data[CONF_SERIAL_PORT]}-{data[CONF_SLAVE_ID]}"
             await self.async_set_unique_id(unique_id)
             self._abort_if_unique_id_configured()
-            error, resolved_profile = await _validate_connection(data)
-            if error is None:
-                data[CONF_PROFILE] = resolved_profile
-                return self.async_create_entry(
-                    title=user_input[CONF_NAME], data=data
+            if self._baudrate_conflict(
+                data[CONF_SERIAL_PORT], data[CONF_BAUDRATE]
+            ):
+                errors["base"] = "baudrate_mismatch"
+            else:
+                error, resolved_profile = await _validate_connection(
+                    self.hass, data
                 )
-            errors["base"] = error
+                if error is None:
+                    data[CONF_PROFILE] = resolved_profile
+                    return self.async_create_entry(
+                        title=user_input[CONF_NAME], data=data
+                    )
+                errors["base"] = error
 
         schema = vol.Schema(
             {
@@ -187,7 +239,7 @@ class GrowattModbusConfigFlow(ConfigFlow, domain=DOMAIN):
             )
             await self.async_set_unique_id(unique_id)
             self._abort_if_unique_id_configured()
-            error, resolved_profile = await _validate_connection(data)
+            error, resolved_profile = await _validate_connection(self.hass, data)
             if error is None:
                 data[CONF_PROFILE] = resolved_profile
                 return self.async_create_entry(

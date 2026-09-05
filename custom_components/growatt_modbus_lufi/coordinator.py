@@ -57,6 +57,7 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
             hass,
             _LOGGER,
             name=f"{DOMAIN}_{entry.title}",
+            config_entry=entry,
             update_interval=timedelta(seconds=scan_interval),
         )
         self.entry = entry

@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.10.0] - 2026-09-05
+
+### Fixed
+
+- **A switch register holding any value other than 1 was shown as off.** `is_on` compared the raw register against `command_on`, so a setting that is tri-state on other Growatt series — the export limitation is documented as 0 = off, 1 = via RS485 meter, 2 = via CT — read as off while it was actually active, and the next "turn on" would have overwritten the working mode with 1. The switch state is now "anything that is not the off value"; what turn on/off write is unchanged.
+- **A truncated Modbus response silently froze every register behind the truncation point.** pymodbus decodes whatever byte count the response frame announces and does not raise on a well formed but short reply, and each poll cycle starts from the previous cycle's values — so a gateway that returned fewer registers than requested left the rest on stale values forever, without the entities ever going unavailable. Block reads now compare the returned register count against the requested one and fail the poll if it differs.
+- **Auto detection silently fell back to the SPH profile when it could not read the inverter type.** A failed read of holding registers 43/44 only logged a warning, so a device whose type was never established still got the SPH register map — including its write addresses. Detection failure and an implausible tracker/phase register now surface as a config-flow error asking the user to pick the series manually.
+- **Any Growatt series that answered on the bus was set up with the SPH register map.** Setup now additionally probes input register 1000 (storage inverter mode, read on every poll of a real SPH) and refuses devices that do not provide the SPH storage register range, instead of exposing SPH write addresses on a series where those addresses mean something else.
+- **Adding a second inverter probed the bus with its own extra connection.** Connection validation opened a fresh client even when another entry already held one for that serial port or TCP endpoint; many RS485-Ethernet gateways accept only one client, so validating the second inverter could fail or drop the first one's live connection. The flow now reuses the running client for that bus (and leaves it open).
+- **A second entry on an already used serial port with a different baud rate failed forever after setup.** Entries on one port share a client opened at the first entry's baud rate, so the newcomer validated fine with its own client and then never reached its inverter. The config flow now rejects the mismatch with a clear error.
+- The shared bus client's reference count leaked when platform setup raised, so it was never closed on the final unload.
+
+### Changed
+
+- Diagnostics now dump the real `polling_plan()` (per group: fast / energy / settings) instead of the unused `read_blocks()`, which had drifted from what is actually read. The dead `required_registers()`/`read_blocks()` pair was removed.
+- The power factor sensor declares `device_class: power_factor`. Its decode (`raw / 10000`) is unchanged — the leading/lagging encoding of Growatt's 0-20000 range is not documented well enough to touch without hardware verification.
+- The coordinator passes `config_entry` to `DataUpdateCoordinator` instead of relying on the deprecated ContextVar fallback.
+
 ## [0.9.1] - 2026-08-30
 
 ### Fixed

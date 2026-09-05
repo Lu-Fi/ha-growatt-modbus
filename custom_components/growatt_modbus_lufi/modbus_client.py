@@ -114,6 +114,15 @@ class GrowattModbusClient:
                     f"Read of {register_type} {address}+{count} "
                     f"returned error: {response}"
                 )
+            # pymodbus decodes whatever byte count the frame announces and
+            # does not complain about a well formed but short response. A
+            # gateway that truncates a block would otherwise leave the
+            # missing registers on their previous values forever.
+            if len(response.registers) != count:
+                raise GrowattModbusError(
+                    f"Read of {register_type} {address}+{count} returned "
+                    f"only {len(response.registers)} register(s)"
+                )
             return list(response.registers)
 
     async def write_register(self, address: int, value: int, unit: int) -> None:

@@ -16,10 +16,10 @@ Local Modbus integration for Growatt hybrid inverters (SPH / SPH TL3 series) —
 - **Serial RTU** (RS485/USB adapter) and **Modbus TCP** (RS485-to-Ethernet gateways)
 - **Automatic inverter detection**: device type code and tracker/phase count are read from holding registers 43/44, selecting the correct profile (1-phase SPH vs. 3-phase SPH TL3) automatically — manual override available
 - **Multiple inverters**: add one config entry per inverter; several slave IDs can share the same RS485 bus or TCP gateway
-- **Efficient polling**: registers are read in blocks (6 transactions per cycle instead of ~90 single reads)
+- **Efficient polling**: registers are read in blocks — 3 transactions per cycle, 11 when the energy counters and settings are due as well, instead of ~90 single reads
 - **Multilingual**: English and German UI, translated enum states (status, priority, derating, ...)
 - **65+ entities** per inverter: PV, grid (per-phase on TL3), battery, EPS, energy counters, temperatures, fault registers
-- **Writable settings**: power on/off (switch), minimum discharge SoC and maximum active power (numbers)
+- **Writable settings**: power on/off, export limitation and AC charging (switches), Load First stop SoC, maximum active power, export limit rate, Grid First / Battery First rates and stop SoCs (numbers), three Grid First and three Battery First time windows with start/end times and enable switches, clock synchronization (button)
 - **Extensible profiles**: register maps live in `registers.py`; adding another Growatt series (MIN, MOD, SPA, MAX, ...) only requires a new `DeviceProfile`
 - Diagnostics download with raw register dump for easy debugging
 
@@ -82,7 +82,7 @@ Based on the official protocol documents "Growatt PV Inverter Modbus RS485 RTU P
 ### HACS (recommended)
 
 1. HACS → Integrations → ⋮ → *Custom repositories* → add this repository (category *Integration*)
-2. Install **Growatt Modbus** and restart Home Assistant
+2. Install **Growatt SPH Modbus** and restart Home Assistant
 
 ### Manual
 
@@ -90,7 +90,7 @@ Copy `custom_components/growatt_modbus_lufi` into your `config/custom_components
 
 ## Setup
 
-*Settings → Devices & services → Add integration → Growatt Modbus*
+*Settings → Devices & services → Add integration → Growatt SPH Modbus*
 
 Choose the connection type:
 
@@ -100,9 +100,9 @@ Choose the connection type:
 | Baud rate (default 9600) | Port (default 502) |
 | Slave ID (default 1) | Slave ID (default 1) |
 
-For a second inverter simply add the integration again with the other slave ID (same port/host is fine — the bus is shared safely).
+For a second inverter simply add the integration again with the other slave ID (same port/host is fine — the bus is shared safely; on a serial port all entries must use the same baud rate, since they share one connection).
 
-The polling interval (default 30 s) can be changed under *Configure* on the integration entry.
+The three polling intervals (live values 30 s, energy counters 300 s, settings 300 s by default) can be changed under *Configure* on the integration entry.
 
 > **Important:** the serial port must not be used by another integration (e.g. the built-in `modbus:` YAML integration) at the same time.
 
@@ -120,10 +120,10 @@ Lokale Anbindung von Growatt-Hybrid-Wechselrichtern (SPH / SPH TL3) über Modbus
 - **Mehrere Wechselrichter**: pro Wechselrichter ein Eintrag; mehrere Slave-IDs können sich denselben RS485-Bus teilen
 - **Effizient**: Registerblöcke statt Einzelabfragen
 - **Zweisprachig**: Deutsch und Englisch, inklusive übersetzter Zustände
-- **Schreibbare Einstellungen**: Ein/Aus, minimaler Entlade-SOC, maximale Wirkleistung
+- **Schreibbare Einstellungen**: Ein/Aus, Einspeisebegrenzung, AC-Laden, Load-First-Stopp-SOC, maximale Wirkleistung, Grid-First-/Battery-First-Raten und -Stopp-SOCs, je drei Grid-First- und Battery-First-Zeitfenster, Uhrzeit-Synchronisation
 - **3-phasige TL3-Geräte**: zusätzliche Sensoren je Phase (Netzspannung/-leistung L1–L3, Außenleiterspannungen, EPS je Phase) — ungetestet, Rückmeldungen willkommen
 
-Einrichtung über *Einstellungen → Geräte & Dienste → Integration hinzufügen → Growatt Modbus*. Für einen zweiten Wechselrichter die Integration einfach erneut mit anderer Slave-ID hinzufügen. Das Abfrageintervall lässt sich unter *Konfigurieren* ändern.
+Einrichtung über *Einstellungen → Geräte & Dienste → Integration hinzufügen → Growatt SPH Modbus*. Für einen zweiten Wechselrichter die Integration einfach erneut mit anderer Slave-ID hinzufügen (am selben seriellen Port mit derselben Baudrate). Die drei Abfrageintervalle lassen sich unter *Konfigurieren* ändern.
 
 > **Wichtig:** Der serielle Port darf nicht gleichzeitig von einer anderen Integration (z. B. der `modbus:`-YAML-Integration) verwendet werden.
 

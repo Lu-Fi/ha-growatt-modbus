@@ -39,6 +39,9 @@
     },
     "error": {
       "cannot_connect": "Verbindung zum Wechselrichter fehlgeschlagen. Port, Verkabelung und Slave-ID prüfen. Hinweis: Der serielle Port darf nicht gleichzeitig von einer anderen Integration verwendet werden.",
+      "cannot_detect": "Der Wechselrichter antwortet, der Typ ließ sich aber nicht erkennen (Holding-Register 43/44). Bitte die Wechselrichter-Serie manuell auswählen statt „Automatisch erkennen“.",
+      "not_storage_inverter": "Das Gerät antwortet, stellt aber die SPH-Speicherregister nicht bereit. Diese Integration unterstützt nur die Hybrid-Serien SPH / SPH TL3 — bei einer anderen Growatt-Serie würden Einstellungen in falsche Register geschrieben.",
+      "baudrate_mismatch": "An diesem seriellen Port ist bereits ein Wechselrichter mit einer anderen Baudrate eingerichtet. Alle Wechselrichter an einem Port teilen sich eine Verbindung und müssen dieselbe Baudrate verwenden.",
       "unknown": "Unerwarteter Fehler, Details im Log."
     },
     "abort": {

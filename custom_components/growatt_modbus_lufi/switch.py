@@ -40,7 +40,13 @@ class GrowattSwitch(GrowattEntity, SwitchEntity):
         raw = self.coordinator.raw_value(REG_HOLDING, self._defn.address)
         if raw is None:
             return None
-        return raw == self._defn.command_on
+        # Everything except the explicit "off" value counts as on: some
+        # of these registers are tri-state on other Growatt series (the
+        # export limitation is documented as 0 = off, 1 = via RS485 meter,
+        # 2 = via CT), and comparing against command_on alone would show
+        # such a device as off — inviting a "turn on" that overwrites the
+        # working mode with a different one.
+        return raw != self._defn.command_off
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         await self.coordinator.async_write_register(

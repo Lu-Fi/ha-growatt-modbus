@@ -14,25 +14,20 @@ from .const import (
     CONF_PROFILE,
     CONF_SERIAL_PORT,
     CONNECTION_SERIAL,
+    CONNECTION_TCP,
     DATA_CLIENTS,
     DEFAULT_BAUDRATE,
     DEFAULT_PROFILE,
     DEFAULT_TCP_PORT,
     DOMAIN,
     PLATFORMS,
+    bus_key,
 )
 from .coordinator import GrowattCoordinator
 from .modbus_client import GrowattModbusClient
 from .registers import PROFILES
 
 _LOGGER = logging.getLogger(__name__)
-
-
-def _bus_key(entry: ConfigEntry) -> str:
-    """Identify the physical bus of a config entry."""
-    if entry.data[CONF_CONNECTION_TYPE] == CONNECTION_SERIAL:
-        return f"serial:{entry.data[CONF_SERIAL_PORT]}"
-    return f"tcp:{entry.data[CONF_HOST]}:{entry.data.get(CONF_PORT, DEFAULT_TCP_PORT)}"
 
 
 def _get_or_create_client(
@@ -42,7 +37,7 @@ def _get_or_create_client(
     clients: dict[str, list] = hass.data.setdefault(DOMAIN, {}).setdefault(
         DATA_CLIENTS, {}
     )
-    key = _bus_key(entry)
+    key = bus_key(entry.data)
     if key in clients:
         clients[key][1] += 1
         return clients[key][0]
@@ -55,7 +50,7 @@ def _get_or_create_client(
         )
     else:
         client = GrowattModbusClient(
-            "tcp",
+            CONNECTION_TCP,
             host=entry.data[CONF_HOST],
             port=entry.data.get(CONF_PORT, DEFAULT_TCP_PORT),
         )
@@ -65,7 +60,7 @@ def _get_or_create_client(
 
 def _release_client(hass: HomeAssistant, entry: ConfigEntry) -> None:
     clients: dict[str, list] = hass.data.get(DOMAIN, {}).get(DATA_CLIENTS, {})
-    key = _bus_key(entry)
+    key = bus_key(entry.data)
     if key not in clients:
         return
     clients[key][1] -= 1
@@ -93,7 +88,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    try:
+        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    except Exception:
+        # Without this the client's reference count stays elevated and the
+        # shared bus client is never closed on the final unload.
+        hass.data[DOMAIN].pop(entry.entry_id, None)
+        _release_client(hass, entry)
+        raise
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
     return True
 
