@@ -106,6 +106,13 @@ The three polling intervals (live values 30 s, energy counters 300 s, settings 3
 
 > **Important:** the serial port must not be used by another integration (e.g. the built-in `modbus:` YAML integration) at the same time.
 
+## Support tools (beta)
+
+Two services help to debug register problems; both are under *Developer tools → Actions*:
+
+- `growatt_modbus_lufi.dump_registers` - read-only; saves a raw register dump (serial number masked) as a JSON file in the Home Assistant config folder.
+- `growatt_modbus_lufi.battery_first_write_test` - **writes to the inverter**: temporarily changes one Battery First window, watches for about a minute whether the value is kept, then restores the original values. Nothing is written unless `confirm` is switched on. Only run it when asked to, and do not change inverter settings while it runs (about 2.5 minutes).
+
 ## Register map
 
 Based on the Growatt Modbus RTU protocol V1.20 for SPH storage inverters. Fault registers 1001–1007 are decoded bit by bit; active fault names are shown in the `active_faults` attribute.
@@ -126,6 +133,8 @@ Lokale Anbindung von Growatt-Hybrid-Wechselrichtern (SPH / SPH TL3) über Modbus
 Einrichtung über *Einstellungen → Geräte & Dienste → Integration hinzufügen → Growatt SPH Modbus*. Für einen zweiten Wechselrichter die Integration einfach erneut mit anderer Slave-ID hinzufügen (am selben seriellen Port mit derselben Baudrate). Die drei Abfrageintervalle lassen sich unter *Konfigurieren* ändern.
 
 > **Wichtig:** Der serielle Port darf nicht gleichzeitig von einer anderen Integration (z. B. der `modbus:`-YAML-Integration) verwendet werden.
+
+**Support-Werkzeuge (Beta):** Unter *Entwicklerwerkzeuge → Aktionen* gibt es `growatt_modbus_lufi.dump_registers` (nur lesend, speichert einen Register-Rohdump als JSON im Konfigurationsordner, Seriennummer maskiert) und `growatt_modbus_lufi.battery_first_write_test`. Der Schreibtest **schreibt in den Wechselrichter**: Er ändert vorübergehend ein Battery-First-Fenster, beobachtet etwa eine Minute, ob der Wert bleibt, und stellt die Originalwerte wieder her. Es wird nur geschrieben, wenn `confirm` eingeschaltet ist. Nur auf Anfrage ausführen und währenddessen (ca. 2,5 Minuten) keine Einstellungen am Wechselrichter ändern.
 
 ## License
 

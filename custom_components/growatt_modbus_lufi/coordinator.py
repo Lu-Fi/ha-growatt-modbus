@@ -228,6 +228,11 @@ class GrowattCoordinator(DataUpdateCoordinator[RegisterData]):
         self._refresh_settings = True
         await self.async_request_refresh()
 
+    async def async_refresh_settings(self) -> None:
+        """Force a settings read on the next cycle and run it now."""
+        self._refresh_settings = True
+        await self.async_request_refresh()
+
     # ------------------------------------------------------------------
     # Decoding helpers
     # ------------------------------------------------------------------

@@ -500,5 +500,52 @@
         "name": "Battery First Fenster 3 Ende"
       }
     }
+  },
+  "services": {
+    "dump_registers": {
+      "name": "Register auslesen",
+      "description": "Liest die Holding-Register (0-124, 1000-1124) des Wechselrichters roh aus und speichert sie als JSON-Datei im Home-Assistant-Konfigurationsordner, für Supportanfragen. Nur lesend. Die Seriennummer des Wechselrichters wird unkenntlich gemacht.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Wechselrichter",
+          "description": "Welcher Wechselrichter gelesen wird. Optional, wenn nur einer eingerichtet ist."
+        },
+        "include_input": {
+          "name": "Input-Register einschließen",
+          "description": "Liest zusätzlich die Input-Register (0-124, 1000-1249). Dauert etwas länger."
+        }
+      }
+    },
+    "battery_first_write_test": {
+      "name": "Battery-First-Schreibtest (schreibt in den Wechselrichter)",
+      "description": "ACHTUNG: Dieser Test SCHREIBT in den Wechselrichter. Er ändert vorübergehend Start-/Stopzeit eines Battery-First-Fensters, beobachtet etwa eine Minute lang, ob der Wechselrichter den Wert behält, und stellt am Ende die ursprünglichen Werte wieder her (dauert etwa 2,5 Minuten). Währenddessen keine Einstellungen am Wechselrichter ändern. Nur starten, wenn der Entwickler darum gebeten hat.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Wechselrichter",
+          "description": "Welcher Wechselrichter getestet wird. Optional, wenn nur einer eingerichtet ist."
+        },
+        "window": {
+          "name": "Fenster",
+          "description": "Battery-First-Fenster 1-3."
+        },
+        "method": {
+          "name": "Schreibmethode",
+          "description": "single = ein Register nach dem anderen (Funktion 6), block = Start, Stop und Enable in einer Transaktion (Funktion 16), both = beide nacheinander."
+        },
+        "confirm": {
+          "name": "Mir ist klar, dass dies in meinen Wechselrichter schreibt",
+          "description": "Muss eingeschaltet sein, sonst wird nichts geschrieben."
+        }
+      }
+    }
+  },
+  "selector": {
+    "write_test_method": {
+      "options": {
+        "single": "Einzelregister (Funktion 6)",
+        "block": "Block (Funktion 16)",
+        "both": "Beide"
+      }
+    }
   }
 }

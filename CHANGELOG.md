@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.10.1b1] - 2026-10-20
+
+### Added (beta)
+
+- **Support services for register problems** (first used for [#2](https://github.com/Lu-Fi/ha-growatt-modbus/issues/2): Battery First times revert to 00:00 on an SPH 10000TL3 BH-UP).
+  - `growatt_modbus_lufi.dump_registers` reads the holding registers 0-124 and 1000-1124 raw (optionally the input registers too), falls back to single registers where a block is rejected, masks the serial number, and saves the result as `growatt_modbus_lufi_dump_<time>.json` in the Home Assistant config folder. Read-only.
+  - `growatt_modbus_lufi.battery_first_write_test` **writes to the inverter**: it temporarily changes one Battery First window with single-register writes (function 6) and/or one block write of start, stop and enable (function 16), reads the values back immediately, after 5 s and after 60 s, then restores the original values. It does nothing unless the user switches on the `confirm` field, and the service description carries the warning. Report saved as `growatt_modbus_lufi_write_test_<time>.json`.
+- `tests/test_diag_tools.py`: both tools against a simulated inverter, no Home Assistant needed (`python3 -m unittest discover -s tests`).
+
 ## [0.10.0] - 2026-09-05
 
 ### Fixed

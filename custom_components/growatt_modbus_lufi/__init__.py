@@ -23,6 +23,7 @@ from .const import (
     PLATFORMS,
     bus_key,
 )
+from . import services
 from .coordinator import GrowattCoordinator
 from .modbus_client import GrowattModbusClient
 from .registers import PROFILES
@@ -96,6 +97,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN].pop(entry.entry_id, None)
         _release_client(hass, entry)
         raise
+    services.async_register_services(hass)
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
     return True
 
@@ -111,4 +113,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)
         _release_client(hass, entry)
+        if not any(
+            isinstance(value, GrowattCoordinator)
+            for value in hass.data[DOMAIN].values()
+        ):
+            services.async_remove_services(hass)
     return unload_ok

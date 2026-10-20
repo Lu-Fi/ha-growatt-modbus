@@ -500,5 +500,52 @@
         "name": "Battery First window 3 end"
       }
     }
+  },
+  "services": {
+    "dump_registers": {
+      "name": "Dump registers",
+      "description": "Reads the holding registers (0-124, 1000-1124) of the inverter raw and saves them as a JSON file in the Home Assistant config folder, for support requests. Read-only. The inverter serial number is masked.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Inverter",
+          "description": "Which inverter to read. Optional if only one is configured."
+        },
+        "include_input": {
+          "name": "Include input registers",
+          "description": "Also read the input registers (0-124, 1000-1249). Takes a bit longer."
+        }
+      }
+    },
+    "battery_first_write_test": {
+      "name": "Battery First write test (writes to the inverter)",
+      "description": "WARNING: this test WRITES to the inverter. It temporarily changes the start/stop time of a Battery First window, watches for about a minute whether the inverter keeps the value, and restores the original values at the end (takes about 2.5 minutes). Do not change inverter settings while it runs. Only start it if you have been asked to by the maintainer.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Inverter",
+          "description": "Which inverter to test. Optional if only one is configured."
+        },
+        "window": {
+          "name": "Window",
+          "description": "Battery First window 1-3."
+        },
+        "method": {
+          "name": "Write method",
+          "description": "single = one register at a time (function 6), block = start, stop and enable in one transaction (function 16), both = try both one after the other."
+        },
+        "confirm": {
+          "name": "I understand this writes to my inverter",
+          "description": "Must be switched on, otherwise nothing is written."
+        }
+      }
+    }
+  },
+  "selector": {
+    "write_test_method": {
+      "options": {
+        "single": "Single registers (function 6)",
+        "block": "Block (function 16)",
+        "both": "Both"
+      }
+    }
   }
 }
